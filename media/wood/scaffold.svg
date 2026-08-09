@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="t">
+  <title id="t">82��A</title>
+  <rect width="960" height="540" fill="#101612"/>
+  <text x="90" y="90" fill="#66a86f" font-family="Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="4">SCAFFOLDING � ��</text>
+  <path d="M150 420h660M210 420V310h170V205h170V110h200" fill="none" stroke="#66a86f" stroke-opacity=".35" stroke-width="3"/>
+  <g font-family="Arial,sans-serif">
+    <g transform="translate(145 285)"><rect width="220" height="110" rx="16" fill="#66a86f" fill-opacity=".12" stroke="#66a86f"/><text x="22" y="38" fill="#bce1c1" font-size="21" font-weight="700">1 � �t��</text><text x="22" y="72" fill="#899a8c" font-size="15">l:e_
+1</text></g>
+    <g transform="translate(370 180)"><rect width="220" height="110" rx="16" fill="#66a86f" fill-opacity=".16" stroke="#66a86f"/><text x="22" y="38" fill="#bce1c1" font-size="21" font-weight="700">2 � ��:</text><text x="22" y="72" fill="#899a8c" font-size="15">�YP�1xx�</text></g>
+    <g transform="translate(595 75)"><rect width="220" height="110" rx="16" fill="#66a86f" fill-opacity=".22" stroke="#8ac792"/><text x="22" y="38" fill="#d8efdb" font-size="21" font-weight="700">3 � �;�L</text><text x="22" y="72" fill="#899a8c" font-size="15">�p/��w�</text></g>
+  </g>
+</svg>

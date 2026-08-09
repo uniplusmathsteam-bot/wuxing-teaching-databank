@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">� Metal YxaGb</title>
+  <desc id="desc">�rڝD���e_P�</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#211d16"/><stop offset="1" stop-color="#11100f"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f2d58e"/><stop offset="1" stop-color="#a87a26"/></linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#d4a94e" stroke-opacity=".08"/></pattern>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/><rect width="960" height="540" fill="url(#grid)"/>
+  <g transform="translate(90 78)">
+    <rect width="780" height="384" rx="28" fill="#d4a94e" fill-opacity=".05" stroke="#d4a94e" stroke-opacity=".25"/>
+    <g transform="translate(72 72)" fill="none" stroke="url(#gold)" stroke-width="3">
+      <circle cx="42" cy="38" r="30"/><path d="M78 38h175M20 108h340M20 170h265M20 232h305" stroke-linecap="round"/>
+      <path d="m350 94 16 14-16 14M276 156l16 14-16 14M306 218l16 14-16 14"/>
+    </g>
+    <text x="535" y="205" fill="#d4a94e" font-family="serif" font-size="108" font-weight="700">�</text>
+    <text x="535" y="250" fill="#f2d58e" font-family="Arial,sans-serif" font-size="20" letter-spacing="6">METAL</text>
+    <text x="535" y="294" fill="#a99d89" font-family="Arial,sans-serif" font-size="16">STRUCTURE � STANDARD � DEBUG</text>
+  </g>
+</svg>

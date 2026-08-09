@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="t">
+  <title id="t">�l���</title>
+  <rect width="960" height="540" fill="#141311"/>
+  <rect x="185" y="62" width="590" height="416" rx="24" fill="#1d1a15" stroke="#d4a94e" stroke-opacity=".35"/>
+  <text x="235" y="125" fill="#d4a94e" font-family="Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="4">TRAP RADAR � w1�T</text>
+  <g font-family="Arial,sans-serif" font-size="22">
+    <g transform="translate(235 176)"><rect width="28" height="28" rx="6" fill="none" stroke="#d4a94e"/><path d="m7 14 5 5 10-12" fill="none" stroke="#f2d58e" stroke-width="3"/><text x="52" y="22" fill="#e7dfd0">�ZL�B</text></g>
+    <g transform="translate(235 238)"><rect width="28" height="28" rx="6" fill="none" stroke="#d4a94e"/><path d="m7 14 5 5 10-12" fill="none" stroke="#f2d58e" stroke-width="3"/><text x="52" y="22" fill="#e7dfd0">�tle_</text></g>
+    <g transform="translate(235 300)"><rect width="28" height="28" rx="6" fill="none" stroke="#d4a94e"/><path d="m7 14 5 5 10-12" fill="none" stroke="#f2d58e" stroke-width="3"/><text x="52" y="22" fill="#e7dfd0">8
+x<c�_</text></g>
+    <g transform="translate(235 362)"><rect width="28" height="28" rx="6" fill="none" stroke="#d4a94e"/><path d="m7 14 5 5 10-12" fill="none" stroke="#f2d58e" stroke-width="3"/><text x="52" y="22" fill="#e7dfd0">TH+c��M</text></g>
+  </g>
+  <path d="M690 148v242" stroke="#d4a94e" stroke-opacity=".2"/><circle cx="690" cy="270" r="58" fill="none" stroke="#d4a94e"/><path d="m731 311 45 45" stroke="#d4a94e" stroke-width="8" stroke-linecap="round"/>
+</svg>

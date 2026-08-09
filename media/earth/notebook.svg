@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="t">
+  <title id="t">/L,�<!</title>
+  <rect width="960" height="540" fill="#14110e"/>
+  <text x="100" y="72" fill="#c29564" font-family="Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="4">MISTAKE NOTEBOOK � /L,</text>
+  <g transform="translate(100 105)" font-family="Arial,sans-serif">
+    <rect width="760" height="360" rx="18" fill="#1e1914" stroke="#ad8151" stroke-opacity=".5"/>
+    <path d="M380 0v360M0 180h760" stroke="#ad8151" stroke-opacity=".5"/>
+    <g fill="#d9b997" font-size="22" font-weight="700">
+      <text x="28" y="45">01 � �L</text><text x="408" y="45">02 � /�</text><text x="28" y="225">03 � �c</text><text x="408" y="225">04 � �</text>
+    </g>
+    <g fill="none" stroke="#7f6a55" stroke-linecap="round">
+      <path d="M28 78h270M28 108h240M28 138h290"/>
+      <path d="M408 78h270M408 108h240M408 138h290"/>
+      <path d="M28 258h270M28 288h240M28 318h290"/>
+      <path d="M408 258h270M408 288h240M408 318h290"/>
+    </g>
+  </g>
+</svg>

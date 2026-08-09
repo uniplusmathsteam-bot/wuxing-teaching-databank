@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="五行教學資料庫：以金、木、水、火、土整理教學影片、圖片、文章與互動工具。">
+    <meta name="theme-color" content="#11100f">
+    <title>五行教學資料庫</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳至主要內容</a>
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brand" href="#/" aria-label="五行教學資料庫首頁">
+          <span class="brand-mark" aria-hidden="true">五</span>
+          <span>
+            <strong>五行教學資料庫</strong>
+            <small>Wuxing Teaching Databank</small>
+          </span>
+        </a>
+        <div class="header-actions">
+          <label class="search-box" for="global-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="global-search" type="search" placeholder="搜尋主題、科目、標籤…" autocomplete="off">
+            <kbd>/</kbd>
+          </label>
+        </div>
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="切換明暗主題" title="切換明暗主題">
+          <span aria-hidden="true">☼</span>
+        </button>
+      </header>
+
+      <main id="main" tabindex="-1">
+        <noscript>
+          <section class="empty-state">
+            <h1>需要啟用 JavaScript</h1>
+            <p>這個資料庫使用 JavaScript 顯示及篩選內容。</p>
+          </section>
+        </noscript>
+      </main>
+
+      <footer class="site-footer">
+        <p>Uni+ 2.0 · 三維動態教學系統</p>
+        <a href="#/about">關於資料庫</a>
+      </footer>
+    </div>
+
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="圖片預覽" hidden>
+      <button class="lightbox-close" type="button" aria-label="關閉圖片預覽">×</button>
+      <img alt="">
+      <p></p>
+    </div>
+
+    <script src="data/content.js"></script>
+    <script src="assets/js/markdown.js"></script>
+    <script src="assets/js/media.js"></script>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>

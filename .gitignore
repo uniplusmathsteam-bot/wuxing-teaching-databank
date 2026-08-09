@@ -1,0 +1,7 @@
+# Source reference; not required by the published site.
+*.pdf
+
+# Local verification artifacts.
+verify-*.png
+# Keep full-length source recordings local; publish only edited media clips.
+raw-videos/*.mp4

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="t d">
+  <title id="t">( Wood YxaGb</title><desc id="d">18Â�w��X9</desc>
+  <defs><linearGradient id="b" x2="1" y2="1"><stop stop-color="#142019"/><stop offset="1" stop-color="#0e1210"/></linearGradient><radialGradient id="g"><stop stop-color="#87ca90"/><stop offset="1" stop-color="#4f8d59"/></radialGradient></defs>
+  <rect width="960" height="540" fill="url(#b)"/>
+  <g fill="none" stroke="#66a86f" stroke-width="3">
+    <path d="M447 430V285m0 45-105-82m105 42 118-101m-118 54-48-104m48 121 135 22" stroke-linecap="round"/>
+    <path d="M340 248 250 190m90 58-122 20M565 189l76-74m-76 74 116 5M399 139l-26-77m26 77 72-70M582 282l114-36m-114 36 80 69"/>
+  </g>
+  <g fill="url(#g)" stroke="#b9e2bd" stroke-opacity=".35">
+    <circle cx="447" cy="285" r="42"/><circle cx="340" cy="248" r="30"/><circle cx="565" cy="189" r="34"/><circle cx="399" cy="139" r="27"/><circle cx="582" cy="282" r="31"/>
+    <circle cx="250" cy="190" r="19"/><circle cx="218" cy="268" r="18"/><circle cx="641" cy="115" r="20"/><circle cx="681" cy="194" r="18"/><circle cx="373" cy="62" r="17"/><circle cx="471" cy="69" r="19"/><circle cx="696" cy="246" r="18"/><circle cx="662" cy="351" r="20"/>
+  </g>
+  <text x="726" y="414" fill="#66a86f" font-family="serif" font-size="90" font-weight="700">(</text>
+  <text x="727" y="449" fill="#b9e2bd" font-family="Arial,sans-serif" font-size="16" letter-spacing="5">WOOD</text>
+</svg>

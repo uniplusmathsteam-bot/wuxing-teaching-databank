@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0e1117">
+    <title>面積與體積 3D 探索器</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0e1117;
+        --panel: #151a22;
+        --panel-2: #1b222d;
+        --line: rgba(255, 255, 255, 0.1);
+        --text: #f5f3ee;
+        --muted: #9ba4b2;
+        --fire: #ff754d;
+        --fire-rgb: 255, 117, 77;
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Microsoft JhengHei", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-width: 300px;
+        min-height: 100%;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      button,
+      input {
+        color: inherit;
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--fire);
+        outline-offset: 2px;
+      }
+
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 18px clamp(18px, 3vw, 34px);
+        border-bottom: 1px solid var(--line);
+        background: rgba(14, 17, 23, 0.9);
+      }
+
+      .title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .mark {
+        display: grid;
+        width: 39px;
+        height: 39px;
+        place-items: center;
+        border: 1px solid rgba(var(--fire-rgb), 0.45);
+        border-radius: 11px;
+        background: rgba(var(--fire-rgb), 0.1);
+        color: var(--fire);
+        font-weight: 800;
+      }
+
+      h1,
+      header p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 15px;
+      }
+
+      header p {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .workspace {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(320px, 1fr) 330px;
+      }
+
+      .stage {
+        position: relative;
+        min-height: 520px;
+        overflow: hidden;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          radial-gradient(circle at 50% 42%, rgba(var(--fire-rgb), 0.1), transparent 30%),
+          var(--bg);
+        background-size: 34px 34px, 34px 34px, auto, auto;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 520px;
+        cursor: grab;
+        touch-action: none;
+      }
+
+      canvas:active {
+        cursor: grabbing;
+      }
+
+      .stage-label {
+        position: absolute;
+        top: 20px;
+        left: 22px;
+        pointer-events: none;
+      }
+
+      .stage-label strong,
+      .stage-label span {
+        display: block;
+      }
+
+      .stage-label strong {
+        color: var(--fire);
+        font-size: 12px;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+      }
+
+      .stage-label span {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .drag-pill {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        padding: 7px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(21, 26, 34, 0.82);
+        color: var(--muted);
+        font-size: 10px;
+        pointer-events: none;
+        transform: translateX(-50%);
+        backdrop-filter: blur(8px);
+      }
+
+      .controls {
+        min-width: 0;
+        padding: 22px;
+        overflow-y: auto;
+        border-left: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .section {
+        padding: 19px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .section:first-child {
+        padding-top: 0;
+      }
+
+      .section:last-child {
+        border-bottom: 0;
+      }
+
+      .section-title {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .shape-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 7px;
+      }
+
+      .shape-button,
+      .toggle-button {
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+        transition: border-color 150ms ease, background 150ms ease;
+      }
+
+      .shape-button {
+        min-height: 42px;
+        padding: 8px;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .shape-button:hover,
+      .toggle-button:hover {
+        border-color: rgba(var(--fire-rgb), 0.4);
+      }
+
+      .shape-button.active {
+        border-color: rgba(var(--fire-rgb), 0.55);
+        background: rgba(var(--fire-rgb), 0.11);
+        color: var(--fire);
+      }
+
+      .slider-row {
+        margin-bottom: 16px;
+      }
+
+      .slider-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .slider-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .slider-label output {
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        height: 4px;
+        appearance: none;
+        border-radius: 999px;
+        outline: 0;
+        background:
+          linear-gradient(var(--fire), var(--fire)) 0 / var(--fill, 50%) 100% no-repeat,
+          #303947;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        width: 16px;
+        height: 16px;
+        appearance: none;
+        border: 2px solid var(--panel);
+        border-radius: 50%;
+        background: var(--fire);
+        box-shadow: 0 0 0 1px rgba(var(--fire-rgb), 0.4);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--panel);
+        border-radius: 50%;
+        background: var(--fire);
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+      }
+
+      .metric {
+        min-width: 0;
+        padding: 13px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--panel-2);
+      }
+
+      .metric span,
+      .metric strong {
+        display: block;
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        margin-top: 4px;
+        color: var(--fire);
+        font-size: clamp(18px, 2.3vw, 24px);
+        font-variant-numeric: tabular-nums;
+        line-height: 1.15;
+      }
+
+      .metric small {
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .formula {
+        margin-top: 10px;
+        padding: 11px 12px;
+        border-left: 2px solid var(--fire);
+        background: rgba(var(--fire-rgb), 0.055);
+      }
+
+      .formula code {
+        display: block;
+        overflow-x: auto;
+        color: #cfd6df;
+        font: 11px/1.7 Consolas, "SFMono-Regular", monospace;
+        white-space: nowrap;
+      }
+
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .toggle-row div strong,
+      .toggle-row div span {
+        display: block;
+      }
+
+      .toggle-row div strong {
+        font-size: 11px;
+      }
+
+      .toggle-row div span {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 9px;
+      }
+
+      .toggle-button {
+        min-width: 66px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .toggle-button.active {
+        border-color: rgba(var(--fire-rgb), 0.55);
+        background: rgba(var(--fire-rgb), 0.11);
+        color: var(--fire);
+      }
+
+      @media (max-width: 760px) {
+        header {
+          padding: 13px 16px;
+        }
+
+        .hint {
+          display: none;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .stage,
+        canvas {
+          min-height: 380px;
+        }
+
+        .controls {
+          padding: 18px;
+          border-top: 1px solid var(--line);
+          border-left: 0;
+          overflow: visible;
+        }
+
+        .section {
+          padding: 16px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <div class="title-wrap">
+          <span class="mark" aria-hidden="true">火</span>
+          <div>
+            <h1>面積與體積 3D 探索器</h1>
+            <p>Area &amp; Volume Explorer</p>
+          </div>
+        </div>
+        <span class="hint">拖動畫面旋轉 · 調整滑桿觀察公式</span>
+      </header>
+
+      <main class="workspace">
+        <section class="stage" aria-label="立體形狀視覺化">
+          <div class="stage-label">
+            <strong id="shape-name">長方體 Cuboid</strong>
+            <span id="view-mode">立體模型 · 可拖動旋轉</span>
+          </div>
+          <canvas id="canvas" aria-label="可旋轉的長方體模型"></canvas>
+          <span class="drag-pill" id="drag-hint">↔ 拖動旋轉模型</span>
+        </section>
+
+        <aside class="controls" aria-label="模型控制">
+          <section class="section">
+            <h2 class="section-title">01 · 選擇形狀</h2>
+            <div class="shape-grid">
+              <button class="shape-button active" type="button" data-shape="cuboid">▰ 長方體</button>
+              <button class="shape-button" type="button" data-shape="cylinder">◉ 圓柱體</button>
+              <button class="shape-button" type="button" data-shape="sphere">● 球體</button>
+              <button class="shape-button" type="button" data-shape="prism">△ 三角柱</button>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2 class="section-title">02 · 調整尺寸</h2>
+            <div id="sliders"></div>
+          </section>
+
+          <section class="section">
+            <h2 class="section-title">03 · 即時計算</h2>
+            <div class="metrics">
+              <div class="metric">
+                <span>表面積 Surface</span>
+                <strong id="area-result">0</strong>
+                <small>平方單位 u²</small>
+              </div>
+              <div class="metric">
+                <span>體積 Volume</span>
+                <strong id="volume-result">0</strong>
+                <small>立方單位 u³</small>
+              </div>
+            </div>
+            <div class="formula" aria-live="polite">
+              <code id="area-formula"></code>
+              <code id="volume-formula"></code>
+            </div>
+          </section>
+
+          <section class="section" id="net-section">
+            <div class="toggle-row">
+              <div>
+                <strong>展開圖模式</strong>
+                <span>把六個面攤開，理解表面積</span>
+              </div>
+              <button class="toggle-button" id="net-toggle" type="button" aria-pressed="false">關閉</button>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const stage = canvas.parentElement;
+        const sliders = document.getElementById("sliders");
+        const areaResult = document.getElementById("area-result");
+        const volumeResult = document.getElementById("volume-result");
+        const areaFormula = document.getElementById("area-formula");
+        const volumeFormula = document.getElementById("volume-formula");
+        const shapeName = document.getElementById("shape-name");
+        const viewMode = document.getElementById("view-mode");
+        const dragHint = document.getElementById("drag-hint");
+        const netSection = document.getElementById("net-section");
+        const netToggle = document.getElementById("net-toggle");
+
+        const shapeConfig = {
+          cuboid: {
+            name: "長方體 Cuboid",
+            dimensions: [
+              { key: "width", label: "長度 Length", min: 1, max: 10, value: 7 },
+              { key: "height", label: "高度 Height", min: 1, max: 10, value: 5 },
+              { key: "depth", label: "闊度 Width", min: 1, max: 10, value: 4 }
+            ]
+          },
+          cylinder: {
+            name: "圓柱體 Cylinder",
+            dimensions: [
+              { key: "radius", label: "半徑 Radius", min: 1, max: 8, value: 4 },
+              { key: "height", label: "高度 Height", min: 1, max: 12, value: 7 }
+            ]
+          },
+          sphere: {
+            name: "球體 Sphere",
+            dimensions: [
+              { key: "radius", label: "半徑 Radius", min: 1, max: 8, value: 4 }
+            ]
+          },
+          prism: {
+            name: "三角柱 Triangular Prism",
+            dimensions: [
+              { key: "base", label: "底邊 Base", min: 1, max: 10, value: 6 },
+              { key: "height", label: "三角高 Height", min: 1, max: 10, value: 5 },
+              { key: "length", label: "柱長 Length", min: 1, max: 10, value: 7 }
+            ]
+          }
+        };
+
+        const values = {};
+        Object.keys(shapeConfig).forEach(function (shape) {
+          values[shape] = {};
+          shapeConfig[shape].dimensions.forEach(function (dimension) {
+            values[shape][dimension.key] = dimension.value;
+          });
+        });
+
+        const state = {
+          shape: "cuboid",
+          rotationY: -0.65,
+          rotationX: 0.42,
+          net: false,
+          dragging: false,
+          lastX: 0,
+          lastY: 0
+        };
+
+        let cssWidth = 0;
+        let cssHeight = 0;
+        let pixelRatio = 1;
+
+        function resize() {
+          const rect = stage.getBoundingClientRect();
+          cssWidth = Math.max(300, rect.width);
+          cssHeight = Math.max(320, rect.height);
+          pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.round(cssWidth * pixelRatio);
+          canvas.height = Math.round(cssHeight * pixelRatio);
+          canvas.style.width = cssWidth + "px";
+          canvas.style.height = cssHeight + "px";
+          draw();
+        }
+
+        function buildSliders() {
+          sliders.innerHTML = "";
+          shapeConfig[state.shape].dimensions.forEach(function (dimension) {
+            const row = document.createElement("div");
+            row.className = "slider-row";
+            const percentage =
+              ((values[state.shape][dimension.key] - dimension.min) /
+                (dimension.max - dimension.min)) *
+              100;
+            row.innerHTML =
+              '<label class="slider-label" for="dimension-' +
+              dimension.key +
+              '"><span>' +
+              dimension.label +
+              '</span><output>' +
+              values[state.shape][dimension.key] +
+              " u</output></label>" +
+              '<input id="dimension-' +
+              dimension.key +
+              '" type="range" min="' +
+              dimension.min +
+              '" max="' +
+              dimension.max +
+              '" step="0.5" value="' +
+              values[state.shape][dimension.key] +
+              '" style="--fill:' +
+              percentage +
+              '%" data-key="' +
+              dimension.key +
+              '">';
+            sliders.appendChild(row);
+          });
+        }
+
+        function cleanNumber(value) {
+          return Number(value.toFixed(2)).toLocaleString("zh-Hant", {
+            maximumFractionDigits: 2
+          });
+        }
+
+        function calculate() {
+          const dimension = values[state.shape];
+          let area = 0;
+          let volume = 0;
+          let areaText = "";
+          let volumeText = "";
+
+          if (state.shape === "cuboid") {
+            const l = dimension.width;
+            const h = dimension.height;
+            const w = dimension.depth;
+            area = 2 * (l * w + l * h + w * h);
+            volume = l * w * h;
+            areaText = "A = 2(lw + lh + wh) = 2(" + l + "×" + w + " + " + l + "×" + h + " + " + w + "×" + h + ")";
+            volumeText = "V = lwh = " + l + " × " + w + " × " + h;
+          } else if (state.shape === "cylinder") {
+            const r = dimension.radius;
+            const h = dimension.height;
+            area = 2 * Math.PI * r * (r + h);
+            volume = Math.PI * r * r * h;
+            areaText = "A = 2πr(r+h) = 2π×" + r + "×(" + r + "+" + h + ")";
+            volumeText = "V = πr²h = π×" + r + "²×" + h;
+          } else if (state.shape === "sphere") {
+            const r = dimension.radius;
+            area = 4 * Math.PI * r * r;
+            volume = (4 / 3) * Math.PI * r * r * r;
+            areaText = "A = 4πr² = 4π×" + r + "²";
+            volumeText = "V = ⁴⁄₃πr³ = ⁴⁄₃π×" + r + "³";
+          } else {
+            const b = dimension.base;
+            const h = dimension.height;
+            const l = dimension.length;
+            const side = Math.sqrt(Math.pow(b / 2, 2) + h * h);
+            area = b * h + l * (b + 2 * side);
+            volume = 0.5 * b * h * l;
+            areaText = "A = bh + L(b + 2s), s = √((b÷2)²+h²)";
+            volumeText = "V = ½bhL = ½×" + b + "×" + h + "×" + l;
+          }
+
+          areaResult.textContent = cleanNumber(area);
+          volumeResult.textContent = cleanNumber(volume);
+          areaFormula.textContent = areaText;
+          volumeFormula.textContent = volumeText;
+        }
+
+        function project(point, scale) {
+          const cosY = Math.cos(state.rotationY);
+          const sinY = Math.sin(state.rotationY);
+          const cosX = Math.cos(state.rotationX);
+          const sinX = Math.sin(state.rotationX);
+
+          const x1 = point.x * cosY - point.z * sinY;
+          const z1 = point.x * sinY + point.z * cosY;
+          const y1 = point.y * cosX - z1 * sinX;
+          const z2 = point.y * sinX + z1 * cosX;
+          const perspective = 1 / (1 + z2 * 0.0025);
+
+          return {
+            x: cssWidth / 2 + x1 * scale * perspective,
+            y: cssHeight / 2 + y1 * scale * perspective,
+            z: z2
+          };
+        }
+
+        function polygon(points, fill, stroke) {
+          if (!points.length) return;
+          ctx.beginPath();
+          ctx.moveTo(points[0].x, points[0].y);
+          points.slice(1).forEach(function (point) {
+            ctx.lineTo(point.x, point.y);
+          });
+          ctx.closePath();
+          if (fill) {
+            ctx.fillStyle = fill;
+            ctx.fill();
+          }
+          ctx.strokeStyle = stroke || "rgba(255, 160, 120, 0.8)";
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+        }
+
+        function label(text, x, y) {
+          ctx.font = "600 11px Inter, sans-serif";
+          const width = ctx.measureText(text).width;
+          ctx.fillStyle = "rgba(14, 17, 23, 0.82)";
+          ctx.fillRect(x - width / 2 - 6, y - 10, width + 12, 20);
+          ctx.fillStyle = "#ffb49f";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(text, x, y);
+        }
+
+        function drawCuboid() {
+          const d = values.cuboid;
+          const max = Math.max(d.width, d.height, d.depth);
+          const scale = Math.min(cssWidth, cssHeight) * 0.42 / max;
+          const x = d.width / 2;
+          const y = d.height / 2;
+          const z = d.depth / 2;
+          const vertices = [
+            { x: -x, y: -y, z: -z },
+            { x: x, y: -y, z: -z },
+            { x: x, y: y, z: -z },
+            { x: -x, y: y, z: -z },
+            { x: -x, y: -y, z: z },
+            { x: x, y: -y, z: z },
+            { x: x, y: y, z: z },
+            { x: -x, y: y, z: z }
+          ].map(function (point) {
+            return project(point, scale);
+          });
+          const faces = [
+            [0, 1, 2, 3],
+            [4, 5, 6, 7],
+            [0, 1, 5, 4],
+            [3, 2, 6, 7],
+            [1, 2, 6, 5],
+            [0, 3, 7, 4]
+          ]
+            .map(function (indices, index) {
+              const points = indices.map(function (vertex) {
+                return vertices[vertex];
+              });
+              return {
+                points: points,
+                depth: points.reduce(function (sum, point) { return sum + point.z; }, 0) / 4,
+                index: index
+              };
+            })
+            .sort(function (a, b) { return a.depth - b.depth; });
+
+          const fills = [
+            "rgba(255,117,77,0.10)",
+            "rgba(255,117,77,0.23)",
+            "rgba(255,167,120,0.18)",
+            "rgba(255,117,77,0.14)",
+            "rgba(255,199,170,0.16)",
+            "rgba(255,117,77,0.12)"
+          ];
+          faces.forEach(function (face) {
+            polygon(face.points, fills[face.index]);
+          });
+
+          label("l = " + d.width, (vertices[2].x + vertices[3].x) / 2, (vertices[2].y + vertices[3].y) / 2 + 18);
+          label("h = " + d.height, (vertices[1].x + vertices[2].x) / 2 + 22, (vertices[1].y + vertices[2].y) / 2);
+          label("w = " + d.depth, (vertices[2].x + vertices[6].x) / 2, (vertices[2].y + vertices[6].y) / 2 + 15);
+        }
+
+        function drawCylinder() {
+          const d = values.cylinder;
+          const max = Math.max(d.radius * 2, d.height);
+          const scale = Math.min(cssWidth, cssHeight) * 0.4 / max;
+          const segments = 54;
+          const top = [];
+          const bottom = [];
+          for (let i = 0; i < segments; i += 1) {
+            const angle = (i / segments) * Math.PI * 2;
+            const x = Math.cos(angle) * d.radius;
+            const z = Math.sin(angle) * d.radius;
+            top.push(project({ x: x, y: -d.height / 2, z: z }, scale));
+            bottom.push(project({ x: x, y: d.height / 2, z: z }, scale));
+          }
+          polygon(bottom, "rgba(255,117,77,0.08)");
+          const side = [];
+          for (let i = 0; i < segments; i += 1) side.push(top[i]);
+          for (let i = segments - 1; i >= 0; i -= 1) side.push(bottom[i]);
+          polygon(side, "rgba(255,117,77,0.14)");
+          polygon(top, "rgba(255,153,110,0.24)");
+          const centerTop = project({ x: 0, y: -d.height / 2, z: 0 }, scale);
+          label("r = " + d.radius, centerTop.x, centerTop.y - 20);
+          label("h = " + d.height, cssWidth / 2 + d.radius * scale + 22, cssHeight / 2);
+        }
+
+        function drawSphere() {
+          const r = values.sphere.radius;
+          const scale = Math.min(cssWidth, cssHeight) * 0.34 / r;
+          const center = project({ x: 0, y: 0, z: 0 }, scale);
+          const radius = r * scale;
+          const gradient = ctx.createRadialGradient(
+            center.x - radius * 0.3,
+            center.y - radius * 0.35,
+            radius * 0.05,
+            center.x,
+            center.y,
+            radius
+          );
+          gradient.addColorStop(0, "rgba(255,201,180,0.55)");
+          gradient.addColorStop(0.55, "rgba(255,117,77,0.24)");
+          gradient.addColorStop(1, "rgba(255,117,77,0.06)");
+          ctx.beginPath();
+          ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+          ctx.fillStyle = gradient;
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255,145,105,0.9)";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.save();
+          ctx.translate(center.x, center.y);
+          ctx.rotate(state.rotationX * 0.5);
+          ctx.scale(1, 0.28);
+          ctx.beginPath();
+          ctx.arc(0, 0, radius, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(255,170,135,0.58)";
+          ctx.stroke();
+          ctx.restore();
+
+          ctx.beginPath();
+          ctx.ellipse(center.x, center.y, radius * 0.32, radius, state.rotationY, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(255,170,135,0.45)";
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(center.x, center.y);
+          ctx.lineTo(center.x + radius * 0.68, center.y - radius * 0.35);
+          ctx.strokeStyle = "#ffb49f";
+          ctx.stroke();
+          label("r = " + r, center.x + radius * 0.4, center.y - radius * 0.28);
+        }
+
+        function drawPrism() {
+          const d = values.prism;
+          const max = Math.max(d.base, d.height, d.length);
+          const scale = Math.min(cssWidth, cssHeight) * 0.42 / max;
+          const b = d.base / 2;
+          const h = d.height / 2;
+          const l = d.length / 2;
+          const raw = [
+            { x: -b, y: h, z: -l },
+            { x: b, y: h, z: -l },
+            { x: 0, y: -h, z: -l },
+            { x: -b, y: h, z: l },
+            { x: b, y: h, z: l },
+            { x: 0, y: -h, z: l }
+          ];
+          const vertices = raw.map(function (point) { return project(point, scale); });
+          const faces = [
+            { ids: [0, 1, 2], fill: "rgba(255,117,77,0.17)" },
+            { ids: [3, 4, 5], fill: "rgba(255,117,77,0.24)" },
+            { ids: [0, 1, 4, 3], fill: "rgba(255,170,130,0.14)" },
+            { ids: [1, 2, 5, 4], fill: "rgba(255,117,77,0.12)" },
+            { ids: [2, 0, 3, 5], fill: "rgba(255,195,165,0.13)" }
+          ].map(function (face) {
+            const points = face.ids.map(function (id) { return vertices[id]; });
+            return {
+              points: points,
+              fill: face.fill,
+              depth: points.reduce(function (sum, point) { return sum + point.z; }, 0) / points.length
+            };
+          }).sort(function (a, b) { return a.depth - b.depth; });
+          faces.forEach(function (face) { polygon(face.points, face.fill); });
+          label("b = " + d.base, (vertices[0].x + vertices[1].x) / 2, (vertices[0].y + vertices[1].y) / 2 + 18);
+          label("h = " + d.height, vertices[2].x + 24, (vertices[2].y + vertices[1].y) / 2);
+          label("L = " + d.length, (vertices[1].x + vertices[4].x) / 2 + 5, (vertices[1].y + vertices[4].y) / 2 - 15);
+        }
+
+        function drawNet() {
+          const d = values.cuboid;
+          const unit = Math.min(
+            cssWidth / (d.depth * 2 + d.width * 2 + 4),
+            cssHeight / (d.height * 2 + d.depth * 2 + 4),
+            35
+          );
+          const x = cssWidth / 2 - (d.depth * 2 + d.width * 2) * unit / 2;
+          const y = cssHeight / 2 - (d.depth + d.height) * unit / 2;
+          const faces = [
+            { x: x + d.depth * unit, y: y + d.depth * unit, w: d.width, h: d.height, name: "l × h" },
+            { x: x + d.depth * unit, y: y, w: d.width, h: d.depth, name: "l × w" },
+            { x: x + d.depth * unit, y: y + (d.depth + d.height) * unit, w: d.width, h: d.depth, name: "l × w" },
+            { x: x, y: y + d.depth * unit, w: d.depth, h: d.height, name: "w × h" },
+            { x: x + (d.depth + d.width) * unit, y: y + d.depth * unit, w: d.depth, h: d.height, name: "w × h" },
+            { x: x + (d.depth * 2 + d.width) * unit, y: y + d.depth * unit, w: d.width, h: d.height, name: "l × h" }
+          ];
+          faces.forEach(function (face, index) {
+            ctx.fillStyle = index % 2 ? "rgba(255,117,77,0.13)" : "rgba(255,159,115,0.2)";
+            ctx.fillRect(face.x, face.y, face.w * unit, face.h * unit);
+            ctx.strokeStyle = "rgba(255,145,105,0.9)";
+            ctx.lineWidth = 1.3;
+            ctx.strokeRect(face.x, face.y, face.w * unit, face.h * unit);
+            ctx.fillStyle = "#ffb49f";
+            ctx.font = "600 10px Inter, sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(face.name, face.x + face.w * unit / 2, face.y + face.h * unit / 2);
+          });
+        }
+
+        function draw() {
+          if (!ctx || !cssWidth || !cssHeight) return;
+          ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+          ctx.clearRect(0, 0, cssWidth, cssHeight);
+          if (state.net && state.shape === "cuboid") {
+            drawNet();
+            return;
+          }
+          if (state.shape === "cuboid") drawCuboid();
+          if (state.shape === "cylinder") drawCylinder();
+          if (state.shape === "sphere") drawSphere();
+          if (state.shape === "prism") drawPrism();
+        }
+
+        function setShape(shape) {
+          state.shape = shape;
+          state.net = false;
+          state.rotationY = -0.65;
+          state.rotationX = 0.42;
+          document.querySelectorAll(".shape-button").forEach(function (button) {
+            button.classList.toggle("active", button.dataset.shape === shape);
+          });
+          shapeName.textContent = shapeConfig[shape].name;
+          canvas.setAttribute("aria-label", "可旋轉的" + shapeConfig[shape].name + "模型");
+          netSection.hidden = shape !== "cuboid";
+          netToggle.classList.remove("active");
+          netToggle.textContent = "關閉";
+          netToggle.setAttribute("aria-pressed", "false");
+          viewMode.textContent = "立體模型 · 可拖動旋轉";
+          dragHint.hidden = false;
+          buildSliders();
+          calculate();
+          draw();
+        }
+
+        function pointerDown(event) {
+          if (state.net) return;
+          state.dragging = true;
+          state.lastX = event.clientX;
+          state.lastY = event.clientY;
+          canvas.setPointerCapture(event.pointerId);
+        }
+
+        function pointerMove(event) {
+          if (!state.dragging || state.net) return;
+          const deltaX = event.clientX - state.lastX;
+          const deltaY = event.clientY - state.lastY;
+          state.rotationY += deltaX * 0.009;
+          state.rotationX = Math.max(-1.1, Math.min(1.1, state.rotationX + deltaY * 0.007));
+          state.lastX = event.clientX;
+          state.lastY = event.clientY;
+          draw();
+        }
+
+        function pointerUp(event) {
+          state.dragging = false;
+          if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+        }
+
+        document.querySelectorAll(".shape-button").forEach(function (button) {
+          button.addEventListener("click", function () {
+            setShape(button.dataset.shape);
+          });
+        });
+
+        sliders.addEventListener("input", function (event) {
+          if (!event.target.matches("input[type=range]")) return;
+          const input = event.target;
+          const value = Number(input.value);
+          values[state.shape][input.dataset.key] = value;
+          input.previousElementSibling.querySelector("output").textContent = value + " u";
+          const percentage = ((value - Number(input.min)) / (Number(input.max) - Number(input.min))) * 100;
+          input.style.setProperty("--fill", percentage + "%");
+          calculate();
+          draw();
+        });
+
+        netToggle.addEventListener("click", function () {
+          state.net = !state.net;
+          netToggle.classList.toggle("active", state.net);
+          netToggle.textContent = state.net ? "開啟" : "關閉";
+          netToggle.setAttribute("aria-pressed", String(state.net));
+          viewMode.textContent = state.net ? "展開圖 · 六個面的總和" : "立體模型 · 可拖動旋轉";
+          dragHint.hidden = state.net;
+          draw();
+        });
+
+        canvas.addEventListener("pointerdown", pointerDown);
+        canvas.addEventListener("pointermove", pointerMove);
+        canvas.addEventListener("pointerup", pointerUp);
+        canvas.addEventListener("pointercancel", pointerUp);
+
+        if ("ResizeObserver" in window) {
+          new ResizeObserver(resize).observe(stage);
+        } else {
+          window.addEventListener("resize", resize);
+        }
+
+        buildSliders();
+        calculate();
+        resize();
+      })();
+    </script>
+  </body>
+</html>

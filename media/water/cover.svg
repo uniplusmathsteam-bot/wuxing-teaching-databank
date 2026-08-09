@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="t d">
+  <title id="t">4 Water YxaGb</title><desc id="d">	dA��a�����d�</desc>
+  <defs><linearGradient id="b" x2="1" y2="1"><stop stop-color="#111f29"/><stop offset="1" stop-color="#0c1115"/></linearGradient><linearGradient id="w" x1="0" x2="1"><stop stop-color="#8ac7e7"/><stop offset="1" stop-color="#367fa9"/></linearGradient></defs>
+  <rect width="960" height="540" fill="url(#b)"/>
+  <g fill="none" stroke="url(#w)" stroke-linecap="round">
+    <path d="M60 205c112-78 195 78 308 0s196 78 309 0 150 31 223 5" stroke-width="4"/>
+    <path d="M30 280c125-92 218 92 343 0s218 92 343 0 166 36 244 8" stroke-width="3" opacity=".7"/>
+    <path d="M72 360c105-72 183 72 288 0s184 72 289 0 140 28 223 2" stroke-width="2" opacity=".43"/>
+  </g>
+  <circle cx="480" cy="280" r="150" fill="#559fcb" fill-opacity=".05" stroke="#559fcb" stroke-opacity=".2"/>
+  <text x="424" y="318" fill="#70b9df" font-family="serif" font-size="120" font-weight="700">4</text>
+  <text x="422" y="370" fill="#b6ddf1" font-family="Arial,sans-serif" font-size="18" letter-spacing="7">WATER</text>
+  <text x="80" y="474" fill="#7492a4" font-family="Arial,sans-serif" font-size="15" letter-spacing="3">EMPATHY � STORY � REFRAME</text>
+</svg>

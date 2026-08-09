@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="t d">
+  <title id="t">k Fire YxaGb</title><desc id="d">|I˹���D��~U4o</desc>
+  <defs><linearGradient id="b" x2="1" y2="1"><stop stop-color="#291813"/><stop offset="1" stop-color="#100f0e"/></linearGradient><linearGradient id="f" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffb090"/><stop offset="1" stop-color="#d94d2a"/></linearGradient><radialGradient id="glow"><stop stop-color="#eb6a45" stop-opacity=".22"/><stop offset="1" stop-color="#eb6a45" stop-opacity="0"/></radialGradient></defs>
+  <rect width="960" height="540" fill="url(#b)"/><circle cx="480" cy="270" r="260" fill="url(#glow)"/>
+  <g transform="translate(175 116)" fill="#eb6a45" fill-opacity=".08" stroke="url(#f)" stroke-width="3">
+    <path d="m0 82 105-60 105 60-105 60zM0 82v124l105 60 105-60V82M105 142v124"/>
+  </g>
+  <g transform="translate(470 135)" fill="#eb6a45" fill-opacity=".1" stroke="url(#f)" stroke-width="3">
+    <ellipse cx="80" cy="35" rx="80" ry="35"/><path d="M0 35v170c0 19 36 35 80 35s80-16 80-35V35"/><ellipse cx="80" cy="205" rx="80" ry="35"/>
+  </g>
+  <g transform="translate(720 190)"><circle cx="70" cy="70" r="70" fill="#eb6a45" fill-opacity=".14" stroke="url(#f)" stroke-width="3"/><ellipse cx="70" cy="70" rx="70" ry="23" fill="none" stroke="#ff9c78" stroke-opacity=".65"/></g>
+  <text x="92" y="440" fill="#eb6a45" font-family="serif" font-size="92" font-weight="700">k</text>
+  <text x="178" y="433" fill="#ffbea7" font-family="Arial,sans-serif" font-size="18" letter-spacing="6">FIRE � VISUAL IMPACT</text>
+</svg>
