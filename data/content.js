@@ -114,6 +114,8 @@ window.DATABANK = {
       cover: "media/metal/s2-jm12-identities-factorization-colour-structure-thumbnail.jpg",
       video: { provider: "local", src: "media/metal/s2-jm12-identities-factorization-colour-structure.mp4" },
       subject: "Mathematics · Identities and Factorization",
+      form: "S2",
+      topic: "JM12 · Identities and Factorization",
       level: "中層水",
       tla: "T + L",
       duration: "1:13",
@@ -133,6 +135,48 @@ window.DATABANK = {
 5. **最後檢查：** 核對符號、係數、次數及同類項。
 
 顏色不是裝飾，而是一套可重複使用的視覺 SOP。這正是金元素的架構師角色：把每道題整理成可追蹤、可檢查的解題路徑。
+`
+    },
+    {
+      id: "s3-jm29-quadrilaterals-structural-lesson-plan",
+      element: "metal",
+      type: "image",
+      title: "S3 JM29 Quadrilaterals：Structural Lesson Plan",
+      subtitle: "以四個 TLA 循環編排四邊形性質、證明框架、DSE 題型與分層延伸，形成清晰可執行的課堂結構。",
+      tags: ["#S3", "#JM29", "#Quadrilaterals", "#LessonPlan", "#TLA", "#StructuralPlanning", "#Gold", "#金"],
+      cover: "media/metal/s3-jm29-quadrilaterals-lesson-plan/page-1.jpg",
+      imageLayout: "document",
+      images: [
+        {
+          src: "media/metal/s3-jm29-quadrilaterals-lesson-plan/page-1.jpg",
+          alt: "S3 JM29 Quadrilaterals structural lesson plan page 1：first and second TLA cycles"
+        },
+        {
+          src: "media/metal/s3-jm29-quadrilaterals-lesson-plan/page-2.jpg",
+          alt: "S3 JM29 Quadrilaterals structural lesson plan page 2：third and fourth TLA cycles"
+        }
+      ],
+      subject: "Mathematics · Quadrilaterals",
+      form: "S3",
+      topic: "JM29 · Quadrilaterals",
+      level: "結構化教案",
+      tla: "4 TLA cycles",
+      duration: "120 mins",
+      date: "2026-08-09",
+      featured: true,
+      body: `
+## 金元素：把整課編排成可執行結構
+
+這份 S3 JM29 四邊形精讀教案以四個 TLA 循環分配約 120 分鐘，將概念輸入、指定練習與應用題清楚分段。
+
+### 課堂結構
+
+1. **第一循環（約 25 分鐘）：** 平行四邊形證明與四項性質，配合角度、判斷及 DSE 題型。
+2. **第二循環（約 40 分鐘）：** 菱形、長方形與正方形，加入面積、作圖、邏輯流程及分層延伸。
+3. **第三循環（約 10 分鐘）：** 中點定理與截線定理，訓練加輔助線及考試題型辨認。
+4. **第四循環（約 45 分鐘）：** 平行四邊形證明答題框架，集中處理常見 DSE 與校本題型。
+
+彩色標記把 T、L、A、時間、必做題及快生延伸分開，讓導師可以快速掌握課堂節奏，亦方便課後檢討每個環節的完成度。
 `
     },
 
@@ -225,6 +269,8 @@ window.DATABANK = {
       cover: "media/water/comic-demo-water-thumbnail.jpg",
       video: { provider: "local", src: "media/water/comic-demo-water-element.mp4" },
       subject: "Mathematics · Percentages",
+      form: "S3",
+      topic: "JM27 · Percentages",
       level: "中層水",
       tla: "T + L",
       duration: "2:00",
@@ -281,6 +327,8 @@ window.DATABANK = {
       cover: "media/fire/s2-jm13-algebraic-fractions-interactive-tools-thumbnail.jpg",
       video: { provider: "local", src: "media/fire/s2-jm13-algebraic-fractions-interactive-tools.mp4" },
       subject: "Mathematics · Algebraic Fractions",
+      form: "S2",
+      topic: "JM13 · Algebraic Fractions",
       level: "中層水",
       tla: "T + L",
       duration: "3:17",
@@ -297,6 +345,8 @@ window.DATABANK = {
       cover: "media/fire/s3-jm26-inequalities-animation-thumbnail.jpg",
       video: { provider: "local", src: "media/fire/s3-jm26-inequalities-animation.mp4" },
       subject: "Mathematics · Inequalities",
+      form: "S3",
+      topic: "JM26 · Inequalities",
       level: "中層水",
       tla: "T + L",
       duration: "4:00",
@@ -313,6 +363,8 @@ window.DATABANK = {
       cover: "media/fire/s3-jm26-inequalities-gamification-thumbnail.jpg",
       video: { provider: "local", src: "media/fire/s3-jm26-inequalities-gamification.mp4" },
       subject: "Mathematics · Inequalities",
+      form: "S3",
+      topic: "JM26 · Inequalities",
       level: "中層水",
       tla: "L + A",
       duration: "2:50",

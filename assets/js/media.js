@@ -65,7 +65,7 @@
     ].join("");
   }
 
-  function renderImageGallery(images) {
+  function renderImageGallery(images, layout) {
     if (!Array.isArray(images) || !images.length) return "";
     const buttons = images
       .map(function (image) {
@@ -77,7 +77,8 @@
         ].join("");
       })
       .join("");
-    return '<div class="image-gallery" aria-label="圖片集">' + buttons + "</div>";
+    const layoutClass = layout === "document" ? " is-document" : "";
+    return '<div class="image-gallery' + layoutClass + '" aria-label="圖片集">' + buttons + "</div>";
   }
 
   function activateVideo(button) {

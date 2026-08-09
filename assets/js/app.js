@@ -24,6 +24,8 @@
   const state = {
     tag: "",
     type: "",
+    form: "",
+    topic: "",
     sort: "newest",
     view: readStorage("wuxing-view") || "grid",
     currentElement: ""
@@ -116,7 +118,9 @@
       '      <p class="card-subtitle">' + escapeHtml(item.subtitle || "") + "</p>",
       '      <div class="tag-list">' + renderTags(item.tags, 3) + "</div>",
       '      <div class="card-footer">',
-      "        <span>" + escapeHtml(item.subject || "綜合") + "</span>",
+      "        <span>" +
+        escapeHtml([item.form, item.topic].filter(Boolean).join(" · ") || item.subject || "綜合") +
+        "</span>",
       "        <span>" + escapeHtml(formatDate(item.date)) + "</span>",
       "      </div>",
       "    </div>",
@@ -221,6 +225,16 @@
         return item.type === state.type;
       });
     }
+    if (state.form) {
+      items = items.filter(function (item) {
+        return item.form === state.form;
+      });
+    }
+    if (state.topic) {
+      items = items.filter(function (item) {
+        return item.topic === state.topic;
+      });
+    }
 
     items.sort(function (a, b) {
       if (state.sort === "oldest") return (a.date || "").localeCompare(b.date || "");
@@ -234,6 +248,8 @@
     if (!preserveFilters || state.currentElement !== element.id) {
       state.tag = "";
       state.type = "";
+      state.form = "";
+      state.topic = "";
       state.sort = "newest";
     }
     state.currentElement = element.id;
@@ -251,6 +267,34 @@
         }, [])
       )
     );
+    const forms = Array.from(
+      new Set(
+        allItems
+          .map(function (item) {
+            return item.form;
+          })
+          .filter(Boolean)
+      )
+    ).sort(function (a, b) {
+      return a.localeCompare(b, "en", { numeric: true });
+    });
+    const topics = Array.from(
+      new Set(
+        allItems
+          .filter(function (item) {
+            return !state.form || item.form === state.form;
+          })
+          .map(function (item) {
+            return item.topic;
+          })
+          .filter(Boolean)
+      )
+    ).sort(function (a, b) {
+      return a.localeCompare(b, "en", { numeric: true });
+    });
+    if (state.topic && !topics.includes(state.topic)) {
+      state.topic = "";
+    }
     const visibleItems = getFilteredElementItems(element.id);
 
     const tagButtons = [
@@ -289,6 +333,36 @@
         );
       })
       .join("");
+    const formOptions = ['<option value="">全部年級</option>']
+      .concat(
+        forms.map(function (form) {
+          return (
+            '<option value="' +
+            escapeHtml(form) +
+            '"' +
+            (state.form === form ? " selected" : "") +
+            ">" +
+            escapeHtml(form) +
+            "</option>"
+          );
+        })
+      )
+      .join("");
+    const topicOptions = ['<option value="">全部主題</option>']
+      .concat(
+        topics.map(function (topic) {
+          return (
+            '<option value="' +
+            escapeHtml(topic) +
+            '"' +
+            (state.topic === topic ? " selected" : "") +
+            ">" +
+            escapeHtml(topic) +
+            "</option>"
+          );
+        })
+      )
+      .join("");
 
     main.innerHTML = [
       '<nav class="breadcrumb" aria-label="頁面路徑">',
@@ -320,6 +394,12 @@
       '  <div class="gallery-toolbar">',
       '    <div class="filter-group" aria-label="內容類型">' + typeButtons + "</div>",
       '    <div class="view-controls">',
+      '      <label class="select-wrap"><select id="form-filter" aria-label="按年級篩選">' +
+        formOptions +
+        "</select></label>",
+      '      <label class="select-wrap"><select id="topic-filter" aria-label="按主題篩選">' +
+        topicOptions +
+        "</select></label>",
       '      <label class="select-wrap"><select id="sort-select" aria-label="排序內容">',
       '        <option value="newest"' + (state.sort === "newest" ? " selected" : "") + ">最新加入</option>",
       '        <option value="oldest"' + (state.sort === "oldest" ? " selected" : "") + ">最早加入</option>",
@@ -348,6 +428,8 @@
       item.title,
       item.subtitle,
       item.subject,
+      item.form,
+      item.topic,
       item.level,
       item.tla,
       item.body,
@@ -408,7 +490,7 @@
       media.push(window.WuxingMedia.video(item.video, item.cover, item.title));
     }
     if (item.images) {
-      media.push(window.WuxingMedia.images(item.images));
+      media.push(window.WuxingMedia.images(item.images, item.imageLayout));
     }
 
     const article = item.body
@@ -454,6 +536,8 @@
       property("五行", element.zh + " · " + element.en),
       property("類型", typeLabel(item.type)),
       property("科目", escapeHtml(item.subject)),
+      property("年級", escapeHtml(item.form)),
+      property("主題", escapeHtml(item.topic)),
       property("深度", escapeHtml(item.level)),
       property("TLA", escapeHtml(item.tla)),
       property("時長", escapeHtml(item.duration)),
@@ -598,6 +682,17 @@
   });
 
   document.addEventListener("change", function (event) {
+    if (event.target.id === "form-filter") {
+      state.form = event.target.value;
+      state.topic = "";
+      updateElementView();
+      return;
+    }
+    if (event.target.id === "topic-filter") {
+      state.topic = event.target.value;
+      updateElementView();
+      return;
+    }
     if (event.target.id === "sort-select") {
       state.sort = event.target.value;
       updateElementView();

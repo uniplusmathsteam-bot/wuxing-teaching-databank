@@ -620,6 +620,7 @@ main {
 
 .select-wrap select {
   min-height: 35px;
+  max-width: 220px;
   padding: 6px 30px 6px 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -989,6 +990,20 @@ main {
   min-height: 220px;
   object-fit: cover;
   transition: transform 300ms ease;
+}
+
+.image-gallery.is-document {
+  align-items: start;
+}
+
+.image-gallery.is-document button {
+  background: #fff;
+}
+
+.image-gallery.is-document img {
+  height: auto;
+  min-height: 0;
+  object-fit: contain;
 }
 
 .image-gallery button:hover img {
