@@ -2,9 +2,13 @@
   "use strict";
 
   const REPO = "uniplusmathsteam-bot/wuxing-teaching-databank";
-  const EDIT_URL = "https://github.com/" + REPO + "/edit/main/data/content.js";
-  const UPLOAD_URL = "https://github.com/" + REPO + "/upload/main/media";
+  const BRANCH = "main";
+  const CONTENT_PATH = "data/content.js";
+  const EDIT_URL = "https://github.com/" + REPO + "/edit/" + BRANCH + "/" + CONTENT_PATH;
+  const UPLOAD_URL = "https://github.com/" + REPO + "/upload/" + BRANCH + "/media";
+  const SITE_URL = "https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/";
   const DRAFT_KEY = "wuxing-admin-draft";
+  const TOKEN_KEY = "wuxing-admin-token";
 
   const FIELD_ORDER = [
     "id",
@@ -62,6 +66,12 @@
     "download-source",
     "github-link",
     "publish-source",
+    "gh-token",
+    "forget-token",
+    "commit-message",
+    "publish-direct-btn",
+    "publish-status",
+    "site-link",
     "f-element",
     "f-type",
     "f-title",
@@ -126,6 +136,14 @@
     }
   }
 
+  function clearDraft() {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (_) {
+      // Nothing to clean up when storage is unavailable.
+    }
+  }
+
   function loadDraft() {
     let raw = null;
     try {
@@ -137,7 +155,16 @@
     try {
       const parsed = JSON.parse(raw);
       if (!parsed || !Array.isArray(parsed.items)) return;
+
+      const publishedSource = buildSource();
       db = parsed;
+      if (buildSource() === publishedSource) {
+        // The live site has caught up with this draft, so there is nothing left to restore.
+        db = clone(window.DATABANK);
+        clearDraft();
+        return;
+      }
+
       dirty = true;
       markSaved("草稿：已載入未發佈的修改");
       dom["draft-banner"].hidden = false;
@@ -628,11 +655,7 @@
 
   function discardDraft() {
     if (!window.confirm("捨棄草稿後會回到網站上現有的內容，未發佈的修改會消失。要繼續嗎？")) return;
-    try {
-      localStorage.removeItem(DRAFT_KEY);
-    } catch (_) {
-      // Nothing to clean up when storage is unavailable.
-    }
+    clearDraft();
     db = clone(window.DATABANK);
     dirty = false;
     dom["draft-banner"].hidden = true;
@@ -646,8 +669,167 @@
   function openPublish() {
     dom["publish-source"].value = buildSource();
     dom["github-link"].href = EDIT_URL;
+    dom["site-link"].href = SITE_URL;
+    dom["gh-token"].value = readToken();
+    dom["publish-status"].hidden = true;
     dom["publish-overlay"].hidden = false;
-    dom["copy-source"].focus();
+    (dom["gh-token"].value ? dom["publish-direct-btn"] : dom["gh-token"]).focus();
+  }
+
+  /* ---------- one-click publishing ---------- */
+
+  function readToken() {
+    try {
+      return localStorage.getItem(TOKEN_KEY) || "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function status(message, kind) {
+    dom["publish-status"].hidden = false;
+    dom["publish-status"].textContent = message;
+    dom["publish-status"].className = "publish-status" + (kind ? " is-" + kind : "");
+  }
+
+  function encodeBase64(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = "";
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+  }
+
+  function decodeBase64(value) {
+    const binary = atob(String(value).replace(/\s/g, ""));
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+
+  function canonical(value) {
+    if (Array.isArray(value)) return value.map(canonical);
+    if (value && typeof value === "object") {
+      const out = {};
+      Object.keys(value)
+        .sort()
+        .forEach(function (key) {
+          out[key] = canonical(value[key]);
+        });
+      return out;
+    }
+    return value;
+  }
+
+  function matchesLoadedVersion(remoteText) {
+    try {
+      const shim = {};
+      new Function("window", remoteText)(shim);
+      return JSON.stringify(canonical(shim.DATABANK)) === JSON.stringify(canonical(window.DATABANK));
+    } catch (_) {
+      // An unreadable remote file is treated as a match so the publish is not blocked.
+      return true;
+    }
+  }
+
+  async function githubFetch(url, options) {
+    const settings = options || {};
+    const response = await fetch(url, {
+      method: settings.method || "GET",
+      headers: {
+        Authorization: "Bearer " + dom["gh-token"].value.trim(),
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+      },
+      body: settings.body
+    });
+    if (response.ok) return response.json();
+
+    const detail = await response.json().catch(function () {
+      return {};
+    });
+    const error = new Error(detail.message || response.statusText);
+    error.status = response.status;
+    throw error;
+  }
+
+  function describeError(error) {
+    if (error.status === 401) return "權杖無效或已過期，請重新產生一個。";
+    if (error.status === 403) return "權杖沒有寫入權限，請確認 Contents 設為 Read and write。";
+    if (error.status === 404) return "找不到檔案或沒有這個 repository 的權限，請確認權杖已授權 " + REPO + "。";
+    if (error.status === 409 || error.status === 422) return "GitHub 上的檔案剛剛被更新，請再按一次發佈。";
+    if (error.status) return "GitHub 回覆錯誤（" + error.status + "）：" + error.message;
+    return "無法連線到 GitHub，請檢查網絡後再試。";
+  }
+
+  async function publishDirect() {
+    const token = dom["gh-token"].value.trim();
+    if (!token) {
+      status("請先貼上 GitHub 存取權杖。", "error");
+      dom["gh-token"].focus();
+      return;
+    }
+
+    const apiUrl =
+      "https://api.github.com/repos/" + REPO + "/contents/" + CONTENT_PATH + "?ref=" + BRANCH;
+    dom["publish-direct-btn"].disabled = true;
+
+    try {
+      status("正在讀取 GitHub 上的現有內容…");
+      const current = await githubFetch(apiUrl);
+
+      if (!matchesLoadedVersion(decodeBase64(current.content))) {
+        const proceed = window.confirm(
+          "GitHub 上的內容跟你開啟編輯器時不一樣，可能有其他人已經發佈了新內容。\n" +
+            "繼續發佈會覆蓋他們的修改。要繼續嗎？"
+        );
+        if (!proceed) {
+          status("已取消發佈。請重新載入編輯器，取得最新內容後再修改。", "error");
+          return;
+        }
+      }
+
+      status("正在發佈到 GitHub…");
+      const note = dom["commit-message"].value.trim();
+      await githubFetch("https://api.github.com/repos/" + REPO + "/contents/" + CONTENT_PATH, {
+        method: "PUT",
+        body: JSON.stringify({
+          message: note ? "Update content: " + note : "Update content via editor",
+          content: encodeBase64(buildSource()),
+          sha: current.sha,
+          branch: BRANCH
+        })
+      });
+
+      try {
+        localStorage.setItem(TOKEN_KEY, token);
+      } catch (_) {
+        // Publishing already succeeded; only remembering the token failed.
+      }
+      dirty = false;
+      dom["commit-message"].value = "";
+      dom["draft-state"].textContent = "已發佈到 GitHub";
+      dom["draft-state"].classList.remove("is-dirty");
+      dom["draft-banner"].hidden = true;
+      status("發佈成功！GitHub Pages 會在一至兩分鐘後更新，之後重新整理網站即可看到。", "ok");
+    } catch (error) {
+      status(describeError(error), "error");
+    } finally {
+      dom["publish-direct-btn"].disabled = false;
+    }
+  }
+
+  function forgetToken() {
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+    } catch (_) {
+      // Nothing to clean up when storage is unavailable.
+    }
+    dom["gh-token"].value = "";
+    status("已清除這部電腦記住的權杖。", "ok");
+    dom["gh-token"].focus();
   }
 
   function downloadSource() {
@@ -753,6 +935,8 @@
     dom["open-publish"].addEventListener("click", openPublish);
     dom["copy-source"].addEventListener("click", copySource);
     dom["download-source"].addEventListener("click", downloadSource);
+    dom["publish-direct-btn"].addEventListener("click", publishDirect);
+    dom["forget-token"].addEventListener("click", forgetToken);
 
     dom["close-publish"].addEventListener("click", function () {
       dom["publish-overlay"].hidden = true;

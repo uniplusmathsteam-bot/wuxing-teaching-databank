@@ -25,9 +25,10 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 1. 先把影片、圖片上載到 GitHub（見下面「上載檔案」）。
 2. 開啟 [內容編輯器](https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/admin.html)。
 3. 新增／修改／刪除內容，編輯器會自動存成瀏覽器草稿。
-4. 按 **完成，準備發佈 →**，複製全部內容。
-5. 在 GitHub 貼上、按 **Commit changes**。
-6. 等一至兩分鐘，網站就更新了。
+4. 按 **完成，準備發佈 →**，再按 **直接發佈到 GitHub**。
+5. 等一至兩分鐘，網站就更新了。
+
+> **重要：** 在編輯器入面打字並不會即時更新網站。所有修改只存在你自己的瀏覽器，一定要按 **完成，準備發佈 →** 再發佈，網站先會改變。
 
 ## 上載檔案（影片、圖片、教案）
 
@@ -65,14 +66,46 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 
 ## 發佈
 
-按 **完成，準備發佈 →** 之後：
+按 **完成，準備發佈 →** 之後有兩個方法。
 
-1. 按 **複製全部內容**。
+### 方法一：一鍵發佈（推薦）
+
+1. 第一次使用時，把 GitHub 存取權杖貼進去（見下一節）。之後這部電腦會記住，不用再貼。
+2. 可以在下面填一句更新說明，例如「新增 S4 三角學示範」。留空也可以。
+3. 按 **直接發佈到 GitHub**。
+4. 見到「發佈成功」就完成了，等一至兩分鐘網站就會更新。
+
+如果其他人在你編輯期間發佈過新內容，編輯器會先警告你，避免無意中覆蓋別人的修改。
+
+### 方法二：手動複製貼上（不需要權杖）
+
+1. 展開 **方法二**，按 **複製全部內容**。
 2. 按 **在 GitHub 開啟 content.js**（需要登入有寫入權限的 GitHub 帳號）。
 3. 在編輯框內按 <kbd>Ctrl</kbd>+<kbd>A</kbd> 全選，再 <kbd>Ctrl</kbd>+<kbd>V</kbd> 貼上。
 4. 按綠色的 **Commit changes**。
 
 發佈後請開一次網站，確認新卡片的封面、影片和篩選都正常。
+
+## 如何取得 GitHub 存取權杖
+
+權杖等於一條「代你提交內容」的鎖匙，只需要做一次。
+
+1. 用有這個 repository 寫入權限的帳號登入 GitHub。
+2. 開啟 [Fine-grained personal access tokens](https://github.com/settings/personal-access-tokens/new)。
+3. **Token name**：隨便填，例如 `wuxing-databank-editor`。
+4. **Expiration**：建議 90 天或 1 年，到期後重新產生一個即可。
+5. **Repository access**：選 **Only select repositories**，然後揀 `wuxing-teaching-databank`。
+6. **Permissions → Repository permissions → Contents**：設為 **Read and write**。
+7. 按 **Generate token**，複製出現的那串字（離開頁面後就看不到了）。
+8. 回到編輯器，貼進 **一鍵發佈** 的欄位，按一次 **直接發佈到 GitHub** 即可。
+
+注意事項：
+
+- 權杖只儲存在你自己的瀏覽器（`localStorage`），不會上傳到網站，其他人看不到。
+- 不要在公用或共用電腦儲存權杖。用完可按 **清除權杖**。
+- 不要把權杖貼在 WhatsApp、電郵或任何檔案入面。每人自己產生一個就可以。
+- 如果你的帳號只是 collaborator 而不是 repository 擁有者，fine-grained 權杖可能無法選到這個 repository。這種情況請改用 [classic token](https://github.com/settings/tokens/new) 並勾選 `repo` 權限，或者請管理員把 repository 轉到 organization。
+- 萬一權杖不小心外洩，到 GitHub 的 Settings → Developer settings 刪除它，再產生一個新的。
 
 ## 常見問題
 
@@ -83,10 +116,13 @@ GitHub Pages 需要一至兩分鐘重新發佈。之後按 <kbd>Ctrl</kbd>+<kbd>
 多數是封面圖路徑打錯。路徑要由 `media/` 開始，並且完全對應 GitHub 上的檔名（英文大小寫也要一樣）。
 
 **不小心關了編輯器？**
-草稿會存在同一部電腦、同一個瀏覽器裡面，重新開啟編輯器就會自動載回。換電腦或清除瀏覽器資料就會消失，所以建議一次做完就發佈。
+草稿會存在同一部電腦、同一個瀏覽器裡面，重新開啟編輯器就會自動載回。換電腦或清除瀏覽器資料就會消失，所以建議一次做完就發佈。發佈後網站追上了草稿的內容，編輯器下次開啟時會自動清走那份草稿。
+
+**一鍵發佈說「沒有權限」？**
+權杖的 Contents 權限要設為 **Read and write**，而且 Repository access 要包含這個 repository。改完之後要重新產生一個權杖，舊的不會自動更新權限。
 
 **兩個人同時改？**
-編輯器的草稿是各自獨立的，後發佈的一方會覆蓋先發佈的一方。建議同一時間只由一人負責發佈，或者分開時段處理。
+編輯器的草稿是各自獨立的，後發佈的一方會覆蓋先發佈的一方。一鍵發佈會在偵測到 GitHub 上的內容有變時先警告你，但最安全還是同一時間只由一人負責發佈。
 
 ---
 
@@ -194,7 +230,19 @@ tool: "tools/my-tool/index.html"
 
 `assets/js/admin.js` 讀取已載入的 `window.DATABANK`，把修改存在 `localStorage`（key：`wuxing-admin-draft`），發佈時用內建序列化器輸出格式一致的 JavaScript：字串用 `JSON.stringify`，`body` 用樣板字串以保留 Markdown 換行。因此手動編輯與編輯器輸出可以互換使用。
 
-如果 repository 搬家，請更新 `assets/js/admin.js` 頂部的 `REPO` 常數。
+開啟編輯器時，如果草稿序列化後與已發佈的 `content.js` 完全相同，該草稿會自動清除，所以發佈成功並待 Pages 重建後不會殘留舊草稿。
+
+## 一鍵發佈的運作方式
+
+「直接發佈到 GitHub」使用 GitHub Contents API，全部在瀏覽器完成，沒有任何後端：
+
+1. `GET /repos/{REPO}/contents/data/content.js?ref=main` 取得目前的 `sha` 及內容。
+2. 把回傳內容以 `new Function` 求值，與載入編輯器時的 `window.DATABANK` 做正規化比較；不一致代表期間有人發佈過，會先要求確認。
+3. `PUT` 同一路徑，附上新的 base64 內容與剛取得的 `sha`。
+
+權杖存在 `localStorage`（key：`wuxing-admin-token`），只留在使用者的瀏覽器。HTTP 401／403／404／409 會翻譯成中文提示，見 `describeError()`。
+
+如果 repository 搬家，請更新 `assets/js/admin.js` 頂部的 `REPO`、`BRANCH` 及 `SITE_URL` 常數。
 
 ## 發布到 GitHub Pages
 
