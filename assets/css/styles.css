@@ -343,6 +343,41 @@ main {
   font-size: 13px;
 }
 
+.overview-section {
+  margin-bottom: 58px;
+}
+
+.overview-figure {
+  margin: 0;
+}
+
+.overview-figure button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #12100f;
+  cursor: zoom-in;
+}
+
+.overview-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.overview-figure button:hover {
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+
+.overview-figure figcaption {
+  margin-top: 12px;
+  color: var(--faint);
+  font-size: 12px;
+}
+
 .element-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -1235,6 +1270,11 @@ main {
 
 .site-footer a:hover {
   color: var(--text);
+}
+
+.footer-links {
+  display: flex;
+  gap: 18px;
 }
 
 .lightbox {

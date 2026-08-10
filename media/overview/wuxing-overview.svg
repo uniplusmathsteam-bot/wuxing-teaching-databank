@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-labelledby="ovTitle ovDesc">
+  <title id="ovTitle">五行教學資料庫總覽</title>
+  <desc id="ovDesc">金、木、水、火、土五個教學戰術模組的角色、功能與戰術武器，以及相生與相剋的關係。</desc>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#181614"/>
+      <stop offset="1" stop-color="#0e0d0c"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.33" cy="0.55" r="0.5">
+      <stop offset="0" stop-color="#d4a94e" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#d4a94e" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M50 0H0V50" fill="none" stroke="#ffffff" stroke-opacity="0.028"/>
+    </pattern>
+    <style>
+      .sans { font-family: Inter, "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif; }
+      .serif { font-family: Georgia, "Noto Serif TC", "Microsoft JhengHei", serif; }
+      .label { font-size: 16px; fill: #cdc6bb; }
+      .muted { fill: #9d968c; }
+      .faint { fill: #7d766d; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#grid)"/>
+  <rect width="1600" height="900" fill="url(#halo)"/>
+
+  <!-- Masthead -->
+  <g class="sans">
+    <path d="M80 96h44" stroke="#d4a94e" stroke-width="2"/>
+    <text x="136" y="102" font-size="13" font-weight="700" letter-spacing="4" fill="#d4a94e">UNI+ 2.0 · X 軸戰術模組</text>
+    <text x="80" y="160" class="serif" font-size="46" font-weight="600" fill="#f4f0e8">五行教學資料庫</text>
+    <text x="80" y="192" font-size="15" letter-spacing="3" class="muted">WUXING TEACHING DATABANK · 五種教學能量總覽</text>
+    <path d="M80 214h1440" stroke="#ffffff" stroke-opacity="0.09"/>
+  </g>
+
+  <!-- Relationship diagram -->
+  <g transform="translate(0,28)">
+    <circle cx="520" cy="520" r="230" fill="none" stroke="#d9cfbe" stroke-opacity="0.30" stroke-width="2"/>
+
+    <polygon points="520,290 655,706 301,449 739,449 385,706"
+             fill="none" stroke="#ffffff" stroke-opacity="0.14" stroke-width="1.5" stroke-dasharray="7 8"/>
+
+    <g fill="#d9cfbe" fill-opacity="0.62">
+      <path d="M-9 -7 L 9 0 L -9 7 Z" transform="translate(655,334) rotate(36)"/>
+      <path d="M-9 -7 L 9 0 L -9 7 Z" transform="translate(739,591) rotate(108)"/>
+      <path d="M-9 -7 L 9 0 L -9 7 Z" transform="translate(520,750) rotate(180)"/>
+      <path d="M-9 -7 L 9 0 L -9 7 Z" transform="translate(301,591) rotate(252)"/>
+      <path d="M-9 -7 L 9 0 L -9 7 Z" transform="translate(385,334) rotate(324)"/>
+    </g>
+
+    <circle cx="520" cy="520" r="58" fill="#12100f" stroke="#ffffff" stroke-opacity="0.10"/>
+    <g class="sans" text-anchor="middle">
+      <text x="520" y="512" font-size="19" font-weight="700" fill="#e7e0d4">X 軸</text>
+      <text x="520" y="538" font-size="12" class="faint">風格手段</text>
+    </g>
+
+    <circle cx="520" cy="290" r="60" fill="#66a86f" fill-opacity="0.14" stroke="#66a86f" stroke-width="2"/>
+    <text x="520" y="294" class="serif" font-size="42" text-anchor="middle" fill="#66a86f">木</text>
+    <text x="520" y="322" class="sans" font-size="12" letter-spacing="2" text-anchor="middle" fill="#9ec9a4">WOOD</text>
+    <text x="520" y="208" class="sans label" text-anchor="middle">園丁 / 導航員</text>
+
+    <circle cx="739" cy="449" r="60" fill="#eb6a45" fill-opacity="0.14" stroke="#eb6a45" stroke-width="2"/>
+    <text x="739" y="453" class="serif" font-size="42" text-anchor="middle" fill="#eb6a45">火</text>
+    <text x="739" y="481" class="sans" font-size="12" letter-spacing="2" text-anchor="middle" fill="#f4a389">FIRE</text>
+    <text x="817" y="455" class="sans label">表演者 / 啦啦隊</text>
+
+    <circle cx="655" cy="706" r="60" fill="#ad8151" fill-opacity="0.14" stroke="#ad8151" stroke-width="2"/>
+    <text x="655" y="710" class="serif" font-size="42" text-anchor="middle" fill="#c1975f">土</text>
+    <text x="655" y="738" class="sans" font-size="12" letter-spacing="2" text-anchor="middle" fill="#d0b189">EARTH</text>
+    <text x="655" y="806" class="sans label" text-anchor="middle">建築師 / 守護者</text>
+
+    <circle cx="385" cy="706" r="60" fill="#d4a94e" fill-opacity="0.14" stroke="#d4a94e" stroke-width="2"/>
+    <text x="385" y="710" class="serif" font-size="42" text-anchor="middle" fill="#d4a94e">金</text>
+    <text x="385" y="738" class="sans" font-size="12" letter-spacing="2" text-anchor="middle" fill="#e6cd93">METAL</text>
+    <text x="385" y="806" class="sans label" text-anchor="middle">架構師 / 裁判</text>
+
+    <circle cx="301" cy="449" r="60" fill="#559fcb" fill-opacity="0.14" stroke="#559fcb" stroke-width="2"/>
+    <text x="301" y="453" class="serif" font-size="42" text-anchor="middle" fill="#559fcb">水</text>
+    <text x="301" y="481" class="sans" font-size="12" letter-spacing="2" text-anchor="middle" fill="#9bcae5">WATER</text>
+    <text x="223" y="455" class="sans label" text-anchor="end">說書人 / 治療師</text>
+  </g>
+
+  <!-- Element summary panel -->
+  <g class="sans">
+    <text x="1010" y="196" font-size="12" font-weight="700" letter-spacing="4" class="faint">五種能量風格 · FIVE STYLE MODULES</text>
+
+    <g transform="translate(1010,225)">
+      <rect width="510" height="96" rx="14" fill="#d4a94e" fill-opacity="0.06" stroke="#d4a94e" stroke-opacity="0.30"/>
+      <circle cx="46" cy="48" r="27" fill="#d4a94e" fill-opacity="0.12" stroke="#d4a94e" stroke-opacity="0.45"/>
+      <text x="46" y="57" class="serif" font-size="26" text-anchor="middle" fill="#d4a94e">金</text>
+      <text x="90" y="38" font-size="18" font-weight="700" fill="#f4f0e8">金 Metal<tspan class="muted" font-weight="400" font-size="15"> · 架構師 / 裁判</tspan></text>
+      <text x="90" y="62" font-size="13.5" class="muted">建立標準 · 拆解難題 · 除錯 Debug</text>
+      <text x="90" y="82" font-size="12.5" class="faint">武器：SOP 手術刀 · 陷阱雷達</text>
+    </g>
+
+    <g transform="translate(1010,331)">
+      <rect width="510" height="96" rx="14" fill="#66a86f" fill-opacity="0.06" stroke="#66a86f" stroke-opacity="0.30"/>
+      <circle cx="46" cy="48" r="27" fill="#66a86f" fill-opacity="0.12" stroke="#66a86f" stroke-opacity="0.45"/>
+      <text x="46" y="57" class="serif" font-size="26" text-anchor="middle" fill="#66a86f">木</text>
+      <text x="90" y="38" font-size="18" font-weight="700" fill="#f4f0e8">木 Wood<tspan class="muted" font-weight="400" font-size="15"> · 園丁 / 導航員</tspan></text>
+      <text x="90" y="62" font-size="13.5" class="muted">構建知識體系 · 激發聯想 · 舉一反三</text>
+      <text x="90" y="82" font-size="12.5" class="faint">武器：思維導圖 · 鷹架 Scaffolding</text>
+    </g>
+
+    <g transform="translate(1010,437)">
+      <rect width="510" height="96" rx="14" fill="#559fcb" fill-opacity="0.06" stroke="#559fcb" stroke-opacity="0.30"/>
+      <circle cx="46" cy="48" r="27" fill="#559fcb" fill-opacity="0.12" stroke="#559fcb" stroke-opacity="0.45"/>
+      <text x="46" y="57" class="serif" font-size="26" text-anchor="middle" fill="#559fcb">水</text>
+      <text x="90" y="38" font-size="18" font-weight="700" fill="#f4f0e8">水 Water<tspan class="muted" font-weight="400" font-size="15"> · 說書人 / 治療師</tspan></text>
+      <text x="90" y="62" font-size="13.5" class="muted">處理情緒 · 建立共情 · 價值重塑</text>
+      <text x="90" y="82" font-size="12.5" class="faint">武器：故事掛鉤 · 情緒緩衝墊</text>
+    </g>
+
+    <g transform="translate(1010,543)">
+      <rect width="510" height="96" rx="14" fill="#eb6a45" fill-opacity="0.06" stroke="#eb6a45" stroke-opacity="0.30"/>
+      <circle cx="46" cy="48" r="27" fill="#eb6a45" fill-opacity="0.12" stroke="#eb6a45" stroke-opacity="0.45"/>
+      <text x="46" y="57" class="serif" font-size="26" text-anchor="middle" fill="#eb6a45">火</text>
+      <text x="90" y="38" font-size="18" font-weight="700" fill="#f4f0e8">火 Fire<tspan class="muted" font-weight="400" font-size="15"> · 表演者 / 啦啦隊</tspan></text>
+      <text x="90" y="62" font-size="13.5" class="muted">搶奪注意力 · 點燃動機 · 打破沉悶</text>
+      <text x="90" y="82" font-size="12.5" class="faint">武器：高頻互動 · 視覺衝擊</text>
+    </g>
+
+    <g transform="translate(1010,649)">
+      <rect width="510" height="96" rx="14" fill="#ad8151" fill-opacity="0.06" stroke="#ad8151" stroke-opacity="0.30"/>
+      <circle cx="46" cy="48" r="27" fill="#ad8151" fill-opacity="0.12" stroke="#ad8151" stroke-opacity="0.45"/>
+      <text x="46" y="57" class="serif" font-size="26" text-anchor="middle" fill="#c1975f">土</text>
+      <text x="90" y="38" font-size="18" font-weight="700" fill="#f4f0e8">土 Earth<tspan class="muted" font-weight="400" font-size="15"> · 建築師 / 守護者</tspan></text>
+      <text x="90" y="62" font-size="13.5" class="muted">鞏固基礎 · 建立習慣 · 提供安全感</text>
+      <text x="90" y="82" font-size="12.5" class="faint">武器：刻意練習 · 錯題本</text>
+    </g>
+  </g>
+
+  <!-- Legend -->
+  <g class="sans">
+    <path d="M1010 790h44" stroke="#d9cfbe" stroke-opacity="0.55" stroke-width="2"/>
+    <path d="M-7 -5 L 7 0 L -7 5 Z" transform="translate(1062,790)" fill="#d9cfbe" fill-opacity="0.62"/>
+    <text x="1082" y="795" font-size="13.5" class="muted">相生 · 木 → 火 → 土 → 金 → 水 → 木</text>
+
+    <path d="M1010 826h56" stroke="#ffffff" stroke-opacity="0.24" stroke-width="1.5" stroke-dasharray="7 8"/>
+    <text x="1082" y="831" font-size="13.5" class="faint">相剋 · 木 → 土 → 水 → 火 → 金 → 木</text>
+  </g>
+
+  <text x="80" y="856" class="sans" font-size="12.5" letter-spacing="2" fill="#6c665e">Uni+ 2.0 · 三維動態教學系統 V12.0　|　X 軸：用什麼方式互動</text>
+</svg>

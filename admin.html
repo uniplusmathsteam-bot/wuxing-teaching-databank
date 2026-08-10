@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <meta name="description" content="五行教學資料庫內容編輯器：不用寫程式，也可以新增、修改及刪除教學內容。">
+    <title>內容編輯器 · 五行教學資料庫</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/admin.css">
+  </head>
+  <body class="admin-body">
+    <header class="admin-header">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true">五</span>
+        <span>
+          <strong>內容編輯器</strong>
+          <small>Content Editor · 不需程式基礎</small>
+        </span>
+      </a>
+      <div class="admin-header-actions">
+        <span class="draft-state" id="draft-state">草稿：尚未修改</span>
+        <button class="button ghost" id="discard-draft" type="button">捨棄草稿</button>
+        <button class="button" id="open-publish" type="button">完成，準備發佈 →</button>
+      </div>
+    </header>
+
+    <p class="admin-banner" id="draft-banner" hidden>
+      <span id="draft-banner-text"></span>
+    </p>
+
+    <div class="admin-layout">
+      <aside class="admin-list">
+        <div class="admin-list-head">
+          <button class="button block" id="new-item" type="button">＋ 新增內容</button>
+          <input id="list-search" type="search" placeholder="搜尋標題、標籤…" autocomplete="off">
+          <div class="element-tabs" id="element-tabs"></div>
+        </div>
+        <div class="admin-items" id="admin-items"></div>
+      </aside>
+
+      <main class="admin-editor" id="admin-editor">
+        <div class="admin-empty" id="admin-empty">
+          <h2>選擇左邊的內容開始編輯</h2>
+          <p>或按「＋ 新增內容」建立一個新的教學資源。所有修改會先存在你的瀏覽器草稿，按「完成，準備發佈」才會產生要上傳到 GitHub 的檔案。</p>
+        </div>
+
+        <form class="admin-form" id="admin-form" hidden>
+          <div class="form-titlebar">
+            <div>
+              <p class="form-kicker" id="form-kicker">編輯內容</p>
+              <h1 id="form-title">內容標題</h1>
+            </div>
+            <div class="form-titlebar-actions">
+              <button class="button ghost" id="duplicate-item" type="button">複製一份</button>
+              <button class="button danger" id="delete-item" type="button">刪除</button>
+            </div>
+          </div>
+
+          <div class="admin-alert" id="form-errors" hidden></div>
+
+          <fieldset class="form-section">
+            <legend>1. 基本資料</legend>
+            <div class="field-grid">
+              <label class="field">
+                <span>五行分類 <em>必填</em></span>
+                <select name="element" id="f-element"></select>
+              </label>
+              <label class="field">
+                <span>內容類型 <em>必填</em></span>
+                <select name="type" id="f-type">
+                  <option value="video">影片 Video</option>
+                  <option value="image">圖片／教案 Image</option>
+                  <option value="article">文章 Article</option>
+                  <option value="tool">互動工具 Tool</option>
+                </select>
+              </label>
+              <label class="field span-2">
+                <span>標題 <em>必填</em></span>
+                <input name="title" id="f-title" type="text" placeholder="例：S2 JM12 Identities and Factorization：Colour-Coded Systematic Solving">
+              </label>
+              <label class="field span-2">
+                <span>一句簡介</span>
+                <textarea name="subtitle" id="f-subtitle" rows="2" placeholder="用一兩句說明這份資源在教什麼、用什麼方法。"></textarea>
+              </label>
+              <label class="field">
+                <span>日期</span>
+                <input name="date" id="f-date" type="date">
+              </label>
+              <label class="field checkbox">
+                <input name="featured" id="f-featured" type="checkbox">
+                <span>設為首頁精選</span>
+              </label>
+              <label class="field span-2">
+                <span>網址代號 ID <em>必填</em>　<small>只可用小寫英文、數字和「-」</small></span>
+                <span class="input-with-button">
+                  <input name="id" id="f-id" type="text" placeholder="s2-jm12-identities-factorization">
+                  <button class="button ghost" id="regen-id" type="button">由標題自動產生</button>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>2. 分類與篩選</legend>
+            <div class="field-grid">
+              <label class="field">
+                <span>年級 Form　<small>首頁篩選會用到</small></span>
+                <input name="form" id="f-form" type="text" list="form-list" placeholder="S2">
+                <datalist id="form-list"></datalist>
+              </label>
+              <label class="field">
+                <span>主題 Topic　<small>首頁篩選會用到</small></span>
+                <input name="topic" id="f-topic" type="text" list="topic-list" placeholder="JM12 · Identities and Factorization">
+                <datalist id="topic-list"></datalist>
+              </label>
+              <label class="field">
+                <span>科目</span>
+                <input name="subject" id="f-subject" type="text" placeholder="Mathematics · Identities and Factorization">
+              </label>
+              <label class="field">
+                <span>深度 Y 軸</span>
+                <input name="level" id="f-level" type="text" list="level-list" placeholder="中層水">
+                <datalist id="level-list"></datalist>
+              </label>
+              <label class="field">
+                <span>TLA 階段</span>
+                <input name="tla" id="f-tla" type="text" placeholder="T + L">
+              </label>
+              <label class="field">
+                <span>時長</span>
+                <input name="duration" id="f-duration" type="text" placeholder="1:13 或 120 mins">
+              </label>
+              <label class="field span-2">
+                <span>標籤 Hashtags　<small>用空格或逗號分隔，不用打「#」也可以</small></span>
+                <input name="tags" id="f-tags" type="text" placeholder="#S2 #JM12 #ColourCoding">
+                <span class="tag-preview" id="tag-preview"></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>3. 媒體檔案</legend>
+            <p class="section-hint">
+              檔案請先上傳到 GitHub 的 <code>media/五行英文名/</code> 資料夾（例如 <code>media/metal/</code>），
+              然後在下面填上同樣的路徑。路徑要由 <code>media/</code> 開始，不要用 <code>C:\</code> 開頭的電腦路徑。
+              <a id="upload-link" href="#" target="_blank" rel="noopener">在 GitHub 上傳檔案 ↗</a>
+            </p>
+            <div class="field-grid">
+              <label class="field span-2">
+                <span>封面圖 <em>必填</em>　<small>卡片上顯示的縮圖</small></span>
+                <input name="cover" id="f-cover" type="text" placeholder="media/metal/my-thumbnail.jpg">
+              </label>
+              <label class="field checkbox span-2">
+                <input id="show-all-media" type="checkbox">
+                <span>顯示全部媒體欄位（影片、圖片集、互動工具一次過填）</span>
+              </label>
+            </div>
+
+            <div class="type-block" data-for="video">
+              <div class="field-grid">
+                <label class="field">
+                  <span>影片來源</span>
+                  <select name="videoProvider" id="f-video-provider">
+                    <option value="">不使用影片</option>
+                    <option value="local">上傳到 GitHub 的影片檔</option>
+                    <option value="vimeo">Vimeo</option>
+                    <option value="youtube">YouTube</option>
+                  </select>
+                </label>
+                <label class="field" id="f-video-value-wrap">
+                  <span id="f-video-value-label">影片檔路徑</span>
+                  <input name="videoValue" id="f-video-value" type="text" placeholder="media/metal/my-video.mp4">
+                </label>
+              </div>
+            </div>
+
+            <div class="type-block" data-for="image">
+              <div class="repeater-head">
+                <span>圖片集　<small>例如教案的每一頁</small></span>
+                <button class="button ghost" id="add-image" type="button">＋ 加一張圖</button>
+              </div>
+              <div class="repeater" id="image-rows"></div>
+              <label class="field">
+                <span>圖片排版</span>
+                <select name="imageLayout" id="f-image-layout">
+                  <option value="">相片（裁切成一致高度）</option>
+                  <option value="document">文件／教案（完整顯示整頁）</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="type-block" data-for="tool">
+              <div class="field-grid">
+                <label class="field span-2">
+                  <span>互動工具網頁路徑</span>
+                  <input name="tool" id="f-tool" type="text" placeholder="tools/area-volume/index.html">
+                </label>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>4. 內文</legend>
+            <p class="section-hint">
+              支援簡單 Markdown：<code>## 小標題</code>、<code>- 項目</code>、<code>1. 步驟</code>、<code>**粗體**</code>、<code>&gt; 引言</code>。
+            </p>
+            <textarea name="body" id="f-body" rows="16" placeholder="## 這一課的重點&#10;&#10;- 第一點&#10;- 第二點"></textarea>
+          </fieldset>
+
+          <aside class="live-preview">
+            <h2>卡片預覽</h2>
+            <div class="preview-card" id="preview-card"></div>
+          </aside>
+        </form>
+      </main>
+    </div>
+
+    <div class="publish-overlay" id="publish-overlay" hidden>
+      <div class="publish-panel" role="dialog" aria-modal="true" aria-labelledby="publish-title">
+        <div class="publish-head">
+          <h2 id="publish-title">發佈到網站</h2>
+          <button class="icon-button" id="close-publish" type="button" aria-label="關閉">×</button>
+        </div>
+        <ol class="publish-steps">
+          <li>按 <strong>複製全部內容</strong>（或下載 <code>content.js</code>）。</li>
+          <li>按 <strong>在 GitHub 開啟 content.js</strong>，登入後會直接進入編輯畫面。</li>
+          <li>在 GitHub 的編輯框內按 <kbd>Ctrl</kbd>+<kbd>A</kbd> 全選，再 <kbd>Ctrl</kbd>+<kbd>V</kbd> 貼上。</li>
+          <li>按綠色的 <strong>Commit changes</strong>，等一兩分鐘網站就會更新。</li>
+        </ol>
+        <div class="publish-actions">
+          <button class="button" id="copy-source" type="button">複製全部內容</button>
+          <button class="button ghost" id="download-source" type="button">下載 content.js</button>
+          <a class="button ghost" id="github-link" href="#" target="_blank" rel="noopener">在 GitHub 開啟 content.js ↗</a>
+        </div>
+        <textarea id="publish-source" readonly spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <script src="data/content.js"></script>
+    <script src="assets/js/markdown.js"></script>
+    <script src="assets/js/admin.js"></script>
+  </body>
+</html>
