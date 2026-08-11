@@ -22,24 +22,30 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 
 ## 一次過看完的流程
 
-1. 先把影片、圖片上載到 GitHub（見下面「上載檔案」）。
-2. 開啟 [內容編輯器](https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/admin.html)。
-3. 新增／修改／刪除內容，編輯器會自動存成瀏覽器草稿。
-4. 按 **完成，準備發佈 →**，再按 **直接發佈到 GitHub**。
-5. 等一至兩分鐘，網站就更新了。
+1. 開啟 [內容編輯器](https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/admin.html)。
+2. 按 **＋ 新增內容**，填表；影片和圖片按 **從電腦選擇** 直接揀檔案。
+3. 按 **完成，準備發佈 →**，再按 **直接發佈到 GitHub**。
+4. 等一至兩分鐘，網站就更新了。
 
 > **重要：** 在編輯器入面打字並不會即時更新網站。所有修改只存在你自己的瀏覽器，一定要按 **完成，準備發佈 →** 再發佈，網站先會改變。
 
-## 上載檔案（影片、圖片、教案）
+## 上載影片、圖片、教案
 
-1. 開啟 GitHub 的 [media 資料夾](https://github.com/uniplusmathsteam-bot/wuxing-teaching-databank/upload/main/media)。
-2. 選對應的五行資料夾：`metal`（金）、`wood`（木）、`water`（水）、`fire`（火）、`earth`（土）。
-3. 把檔案拖進去，按 **Commit changes**。
-4. 記下路徑，例如 `media/fire/my-demo.mp4`，稍後在編輯器要填。
+在編輯器的「3. 媒體檔案」，每個路徑欄位旁邊都有 **從電腦選擇** 按鈕：
 
-檔名建議只用小寫英文、數字和 `-`，例如 `s3-jm29-quadrilaterals-page-1.jpg`。中文檔名或空格容易出問題。
+1. 按 **從電腦選擇**，在自己電腦揀檔案。
+2. 編輯器會自動改好檔名並填上路徑，例如 `My Cover Photo.JPG` 會變成 `media/metal/my-cover-photo.jpg`。
+3. 封面圖會即時在右邊的卡片預覽顯示，確認揀對了檔案。
+4. 檔案暫時只留在你的瀏覽器，欄位下方會列出「發佈時會自動上載 N 個檔案」，可以逐個 **取消**。
+5. 按 **直接發佈到 GitHub** 時，編輯器會先上載檔案，再更新內容，一次過完成。
 
-> GitHub 單一檔案上限是 100 MB。長片建議放 Vimeo 或 YouTube，在編輯器選對應來源再填影片 ID 就可以。
+檔案大小規則：
+
+- 單一檔案上限 100 MB，超過會拒絕，並建議改用 Vimeo 或 YouTube。
+- 超過 40 MB 會先問你一次，因為大檔案會令 repository 永久變大，網頁載入亦較慢。
+- 長片最好放 Vimeo 或 YouTube：在「影片來源」選 Vimeo／YouTube，只填影片 ID，不佔用 repository 空間。
+
+> 用編輯器上載需要先設定好 GitHub 存取權杖（見下面）。如果用方法二手動發佈，檔案不會自動上載，要自己開 [GitHub 的 media 資料夾](https://github.com/uniplusmathsteam-bot/wuxing-teaching-databank/upload/main/media) 拖檔案上去；留意 GitHub 網頁版拖放上載只支援 25 MB 以下的檔案，用編輯器上載反而可以去到 100 MB。
 
 ## 使用內容編輯器
 
@@ -57,7 +63,7 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 - **五行分類**：決定內容放在哪一張大卡入面。
 - **內容類型**：影片、圖片／教案、文章、互動工具。選了類型，下面就只會顯示相關欄位。
 - **網址代號 ID**：這項內容的網址，只可以用小寫英文、數字和 `-`。不肯定就按 **由標題自動產生**。
-- **封面圖**：卡片上的縮圖，一定要填，建議 16:9（例如 1600 × 900）。
+- **封面圖**：卡片上的縮圖，一定要填，建議 16:9（例如 1600 × 900）。按 **從電腦選擇** 就會自動填好路徑。
 - **年級 Form** 和 **主題 Topic**：首頁的篩選器就是用這兩個欄位，填了才可以被篩選出來。
 - **標籤**：用空格分隔，不用自己打 `#`。
 - **內文**：支援簡單 Markdown：`## 小標題`、`- 項目`、`1. 步驟`、`**粗體**`、`> 引言`。
@@ -72,12 +78,14 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 
 1. 第一次使用時，把 GitHub 存取權杖貼進去（見下一節）。之後這部電腦會記住，不用再貼。
 2. 可以在下面填一句更新說明，例如「新增 S4 三角學示範」。留空也可以。
-3. 按 **直接發佈到 GitHub**。
+3. 按 **直接發佈到 GitHub**。有待上載的檔案會先逐個上載，畫面會顯示進度。
 4. 見到「發佈成功」就完成了，等一至兩分鐘網站就會更新。
 
 如果其他人在你編輯期間發佈過新內容，編輯器會先警告你，避免無意中覆蓋別人的修改。
 
 ### 方法二：手動複製貼上（不需要權杖）
+
+這個方法**不會**上載檔案，請先自行在 GitHub 上傳影片和圖片。
 
 1. 展開 **方法二**，按 **複製全部內容**。
 2. 按 **在 GitHub 開啟 content.js**（需要登入有寫入權限的 GitHub 帳號）。
@@ -236,9 +244,12 @@ tool: "tools/my-tool/index.html"
 
 「直接發佈到 GitHub」使用 GitHub Contents API，全部在瀏覽器完成，沒有任何後端：
 
-1. `GET /repos/{REPO}/contents/data/content.js?ref=main` 取得目前的 `sha` 及內容。
-2. 把回傳內容以 `new Function` 求值，與載入編輯器時的 `window.DATABANK` 做正規化比較；不一致代表期間有人發佈過，會先要求確認。
-3. `PUT` 同一路徑，附上新的 base64 內容與剛取得的 `sha`。
+1. 逐個上載待處理的媒體檔案：先 `GET` 取得已存在檔案的 `sha`（404 代表新檔案），再 `PUT` base64 內容。
+2. `GET /repos/{REPO}/contents/data/content.js?ref=main` 取得目前的 `sha` 及內容。
+3. 把回傳內容以 `new Function` 求值，與載入編輯器時的 `window.DATABANK` 做正規化比較；不一致代表期間有人發佈過，會先要求確認。
+4. `PUT` 同一路徑，附上新的 base64 內容與剛取得的 `sha`。
+
+媒體檔案先上載、`content.js` 最後提交，因此中途失敗時網站不會指向未存在的檔案。從電腦揀的檔案會暫存在 `pending`（路徑 → `{ file, url }`），`url` 是 `URL.createObjectURL` 產生的本機預覽網址。上限見 `MAX_UPLOAD`（100 MB）與 `WARN_UPLOAD`（40 MB）。
 
 權杖存在 `localStorage`（key：`wuxing-admin-token`），只留在使用者的瀏覽器。HTTP 401／403／404／409 會翻譯成中文提示，見 `describeError()`。
 

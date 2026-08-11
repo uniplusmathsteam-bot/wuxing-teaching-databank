@@ -9,6 +9,8 @@
   const SITE_URL = "https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/";
   const DRAFT_KEY = "wuxing-admin-draft";
   const TOKEN_KEY = "wuxing-admin-token";
+  const MAX_UPLOAD = 100 * 1024 * 1024;
+  const WARN_UPLOAD = 40 * 1024 * 1024;
 
   const FIELD_ORDER = [
     "id",
@@ -66,6 +68,9 @@
     "download-source",
     "github-link",
     "publish-source",
+    "pending-uploads",
+    "pending-summary",
+    "file-picker",
     "gh-token",
     "forget-token",
     "commit-message",
@@ -108,6 +113,10 @@
   let searchText = "";
   let dirty = false;
   let imageRows = [];
+  let pickTarget = null;
+
+  // Files chosen from the computer, keyed by their target path, uploaded when publishing.
+  const pending = {};
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -559,6 +568,7 @@
             '" value="' +
             escapeHtml(row.alt) +
             '" placeholder="圖片說明">',
+          '  <button type="button" data-pick="image" data-accept="image/*" data-index="' + index + '">從電腦選擇</button>',
           '  <button type="button" data-remove-image="' + index + '">移除</button>',
           "</div>"
         ].join("");
@@ -600,8 +610,124 @@
       // A slow reply from a path the user has since edited must not overwrite the current preview.
       if (holder.isConnected) holder.textContent = "找不到封面圖，請檢查路徑";
     });
-    image.src = cover;
+    image.src = localUrl(cover);
     holder.appendChild(image);
+  }
+
+  /* ---------- picking files from the computer ---------- */
+
+  function formatSize(bytes) {
+    return bytes >= 1024 * 1024
+      ? (bytes / 1024 / 1024).toFixed(1) + " MB"
+      : Math.max(1, Math.round(bytes / 1024)) + " KB";
+  }
+
+  function safeFileName(name) {
+    const dot = name.lastIndexOf(".");
+    const stem = dot > 0 ? name.slice(0, dot) : name;
+    const extension = dot > 0 ? name.slice(dot).toLowerCase() : "";
+    const cleaned = stem
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return (cleaned || "file-" + Date.now().toString(36)) + extension;
+  }
+
+  function pathInUse(path) {
+    return db.items.some(function (item) {
+      if (item === selected) return false;
+      if (item.cover === path || item.tool === path) return true;
+      if (item.video && item.video.src === path) return true;
+      return (item.images || []).some(function (image) {
+        return image.src === path;
+      });
+    });
+  }
+
+  function targetPath(fileName) {
+    const folder = "media/" + dom["f-element"].value + "/";
+    const name = safeFileName(fileName);
+    let candidate = folder + name;
+    let counter = 2;
+    while (pathInUse(candidate)) {
+      const dot = name.lastIndexOf(".");
+      candidate =
+        folder + (dot > 0 ? name.slice(0, dot) + "-" + counter + name.slice(dot) : name + "-" + counter);
+      counter += 1;
+    }
+    return candidate;
+  }
+
+  function acceptFile(file) {
+    if (file.size > MAX_UPLOAD) {
+      window.alert(
+        "「" + file.name + "」有 " + formatSize(file.size) + "，超過 GitHub 的 100 MB 上限。\n" +
+          "長片請上載到 Vimeo 或 YouTube，然後在「影片來源」選 Vimeo／YouTube 並填影片 ID。"
+      );
+      return false;
+    }
+    if (file.size > WARN_UPLOAD) {
+      return window.confirm(
+        "「" + file.name + "」有 " + formatSize(file.size) + "，會令 repository 永久變大，網頁載入亦會較慢。\n" +
+          "建議先壓縮，或改用 Vimeo／YouTube。仍要加入嗎？"
+      );
+    }
+    return true;
+  }
+
+  function queueUpload(file, apply) {
+    if (!acceptFile(file)) return;
+    const path = targetPath(file.name);
+    if (pending[path]) URL.revokeObjectURL(pending[path].url);
+    pending[path] = { file: file, url: URL.createObjectURL(file) };
+    apply(path);
+    renderPending();
+    commitForm();
+  }
+
+  function renderPending() {
+    const paths = Object.keys(pending);
+    dom["pending-uploads"].hidden = !paths.length;
+    if (!paths.length) return;
+    dom["pending-uploads"].innerHTML =
+      "<strong>發佈時會自動上載 " + paths.length + " 個檔案：</strong>" +
+      paths
+        .map(function (path) {
+          return (
+            '<span class="pending-file">' +
+            escapeHtml(path) +
+            "（" +
+            formatSize(pending[path].file.size) +
+            '）<button type="button" data-cancel-upload="' + escapeHtml(path) + '">取消</button></span>'
+          );
+        })
+        .join("");
+  }
+
+  function clearPending() {
+    Object.keys(pending).forEach(function (path) {
+      URL.revokeObjectURL(pending[path].url);
+      delete pending[path];
+    });
+    renderPending();
+  }
+
+  function localUrl(path) {
+    return pending[path] ? pending[path].url : path;
+  }
+
+  function fileToBase64(file) {
+    return new Promise(function (resolve, reject) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const result = String(reader.result);
+        resolve(result.slice(result.indexOf(",") + 1));
+      };
+      reader.onerror = function () {
+        reject(new Error("無法讀取「" + file.name + "」"));
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   /* ---------- actions ---------- */
@@ -656,6 +782,7 @@
   function discardDraft() {
     if (!window.confirm("捨棄草稿後會回到網站上現有的內容，未發佈的修改會消失。要繼續嗎？")) return;
     clearDraft();
+    clearPending();
     db = clone(window.DATABANK);
     dirty = false;
     dom["draft-banner"].hidden = true;
@@ -672,6 +799,14 @@
     dom["site-link"].href = SITE_URL;
     dom["gh-token"].value = readToken();
     dom["publish-status"].hidden = true;
+
+    const waiting = Object.keys(pending);
+    dom["pending-summary"].hidden = !waiting.length;
+    dom["pending-summary"].textContent = waiting.length
+      ? "一併上載 " + waiting.length + " 個檔案：" + waiting.join("、") +
+        "（方法二不會上載檔案，需要自己在 GitHub 上傳）"
+      : "";
+
     dom["publish-overlay"].hidden = false;
     (dom["gh-token"].value ? dom["publish-direct-btn"] : dom["gh-token"]).focus();
   }
@@ -764,6 +899,34 @@
     return "無法連線到 GitHub，請檢查網絡後再試。";
   }
 
+  function contentsUrl(path) {
+    return "https://api.github.com/repos/" + REPO + "/contents/" + path;
+  }
+
+  async function uploadPendingFiles() {
+    const paths = Object.keys(pending);
+    for (let i = 0; i < paths.length; i += 1) {
+      const path = paths[i];
+      const file = pending[path].file;
+      status("正在上載檔案 " + (i + 1) + "／" + paths.length + "：" + file.name + "（" + formatSize(file.size) + "）…");
+
+      let sha = null;
+      try {
+        sha = (await githubFetch(contentsUrl(path) + "?ref=" + BRANCH)).sha;
+      } catch (error) {
+        if (error.status !== 404) throw error;
+      }
+
+      const body = { message: "Upload " + path, content: await fileToBase64(file), branch: BRANCH };
+      if (sha) body.sha = sha;
+      await githubFetch(contentsUrl(path), { method: "PUT", body: JSON.stringify(body) });
+
+      URL.revokeObjectURL(pending[path].url);
+      delete pending[path];
+      renderPending();
+    }
+  }
+
   async function publishDirect() {
     const token = dom["gh-token"].value.trim();
     if (!token) {
@@ -772,11 +935,14 @@
       return;
     }
 
-    const apiUrl =
-      "https://api.github.com/repos/" + REPO + "/contents/" + CONTENT_PATH + "?ref=" + BRANCH;
+    const apiUrl = contentsUrl(CONTENT_PATH) + "?ref=" + BRANCH;
     dom["publish-direct-btn"].disabled = true;
 
+    const uploaded = Object.keys(pending).length;
+
     try {
+      await uploadPendingFiles();
+
       status("正在讀取 GitHub 上的現有內容…");
       const current = await githubFetch(apiUrl);
 
@@ -793,7 +959,7 @@
 
       status("正在發佈到 GitHub…");
       const note = dom["commit-message"].value.trim();
-      await githubFetch("https://api.github.com/repos/" + REPO + "/contents/" + CONTENT_PATH, {
+      await githubFetch(contentsUrl(CONTENT_PATH), {
         method: "PUT",
         body: JSON.stringify({
           message: note ? "Update content: " + note : "Update content via editor",
@@ -813,7 +979,12 @@
       dom["draft-state"].textContent = "已發佈到 GitHub";
       dom["draft-state"].classList.remove("is-dirty");
       dom["draft-banner"].hidden = true;
-      status("發佈成功！GitHub Pages 會在一至兩分鐘後更新，之後重新整理網站即可看到。", "ok");
+      dom["pending-summary"].hidden = true;
+      status(
+        (uploaded ? "已上載 " + uploaded + " 個檔案，並" : "") +
+          "發佈成功！GitHub Pages 會在一至兩分鐘後更新，之後重新整理網站即可看到。",
+        "ok"
+      );
     } catch (error) {
       status(describeError(error), "error");
     } finally {
@@ -870,6 +1041,7 @@
     renderTabs();
     renderList();
     renderDatalists();
+    renderPending();
     dom["upload-link"].href = UPLOAD_URL;
 
     dom["element-tabs"].addEventListener("click", function (event) {
@@ -913,6 +1085,45 @@
       imageRows.splice(Number(button.dataset.removeImage), 1);
       renderImageRows();
       commitForm();
+    });
+
+    dom["admin-form"].addEventListener("click", function (event) {
+      const button = event.target.closest("button[data-pick]");
+      if (!button) return;
+      pickTarget = { kind: button.dataset.pick, index: Number(button.dataset.index) };
+      dom["file-picker"].accept = button.dataset.accept || "";
+      dom["file-picker"].click();
+    });
+
+    dom["file-picker"].addEventListener("change", function (event) {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = "";
+      if (!file || !pickTarget) return;
+      const target = pickTarget;
+      pickTarget = null;
+
+      queueUpload(file, function (path) {
+        if (target.kind === "cover") {
+          dom["f-cover"].value = path;
+        } else if (target.kind === "video") {
+          dom["f-video-provider"].value = "local";
+          dom["f-video-value"].value = path;
+          syncTypeBlocks();
+        } else if (target.kind === "image") {
+          imageRows[target.index].src = path;
+          renderImageRows();
+        }
+      });
+    });
+
+    dom["pending-uploads"].addEventListener("click", function (event) {
+      const button = event.target.closest("button[data-cancel-upload]");
+      if (!button) return;
+      const path = button.dataset.cancelUpload;
+      URL.revokeObjectURL(pending[path].url);
+      delete pending[path];
+      renderPending();
+      renderPreview();
     });
 
     dom["add-image"].addEventListener("click", function () {

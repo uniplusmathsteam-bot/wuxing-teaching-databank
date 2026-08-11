@@ -143,13 +143,17 @@
             <legend>3. 媒體檔案</legend>
             <p class="section-hint">
               檔案請先上傳到 GitHub 的 <code>media/五行英文名/</code> 資料夾（例如 <code>media/metal/</code>），
-              然後在下面填上同樣的路徑。路徑要由 <code>media/</code> 開始，不要用 <code>C:\</code> 開頭的電腦路徑。
-              <a id="upload-link" href="#" target="_blank" rel="noopener">在 GitHub 上傳檔案 ↗</a>
+              按 <strong>從電腦選擇</strong> 就可以直接揀檔案，發佈時會自動上載到 GitHub，不用自己開 GitHub 上傳。
+              單一檔案最大 100 MB；長片建議放 Vimeo 或 YouTube。
+              <a id="upload-link" href="#" target="_blank" rel="noopener">或手動在 GitHub 上傳 ↗</a>
             </p>
             <div class="field-grid">
               <label class="field span-2">
                 <span>封面圖 <em>必填</em>　<small>卡片上顯示的縮圖</small></span>
-                <input name="cover" id="f-cover" type="text" placeholder="media/metal/my-thumbnail.jpg">
+                <span class="input-with-button">
+                  <input name="cover" id="f-cover" type="text" placeholder="media/metal/my-thumbnail.jpg">
+                  <button class="button ghost" type="button" data-pick="cover" data-accept="image/*">從電腦選擇</button>
+                </span>
               </label>
               <label class="field checkbox span-2">
                 <input id="show-all-media" type="checkbox">
@@ -170,7 +174,10 @@
                 </label>
                 <label class="field" id="f-video-value-wrap">
                   <span id="f-video-value-label">影片檔路徑</span>
-                  <input name="videoValue" id="f-video-value" type="text" placeholder="media/metal/my-video.mp4">
+                  <span class="input-with-button">
+                    <input name="videoValue" id="f-video-value" type="text" placeholder="media/metal/my-video.mp4">
+                    <button class="button ghost" type="button" data-pick="video" data-accept="video/*">從電腦選擇</button>
+                  </span>
                 </label>
               </div>
             </div>
@@ -198,6 +205,9 @@
                 </label>
               </div>
             </div>
+
+            <div class="pending-uploads" id="pending-uploads" hidden></div>
+            <input id="file-picker" type="file" hidden>
           </fieldset>
 
           <fieldset class="form-section">
@@ -237,6 +247,7 @@
           <div class="token-row">
             <input id="commit-message" type="text" placeholder="這次更新的說明（可留空），例如：新增 S4 三角學示範">
           </div>
+          <p class="pending-summary" id="pending-summary" hidden></p>
           <div class="publish-actions">
             <button class="button" id="publish-direct-btn" type="button">直接發佈到 GitHub</button>
             <a class="button ghost" id="site-link" href="#" target="_blank" rel="noopener">開啟網站 ↗</a>
