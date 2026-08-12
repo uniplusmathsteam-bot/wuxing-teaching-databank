@@ -100,16 +100,24 @@
     "f-body",
     "form-list",
     "topic-list",
-    "level-list"
+    "level-list",
+    "list-subject",
+    "manage-subjects",
+    "subject-overlay",
+    "subject-rows",
+    "add-subject",
+    "close-subjects",
+    "done-subjects"
   ].forEach(function (id) {
     dom[id] = document.getElementById(id);
   });
 
   const escapeHtml = window.WuxingMarkdown.escape;
 
-  let db = clone(window.DATABANK);
+  let db = normalise(window.DATABANK);
   let selected = null;
   let filterElement = "";
+  let filterSubject = "";
   let searchText = "";
   let dirty = false;
   let imageRows = [];
@@ -122,10 +130,35 @@
     return JSON.parse(JSON.stringify(value));
   }
 
+  // Drafts saved before subjects existed still have to open without breaking.
+  function normalise(source) {
+    const next = clone(source);
+    if (!Array.isArray(next.subjects)) next.subjects = [];
+    if (!Array.isArray(next.items)) next.items = [];
+    return next;
+  }
+
   function elementById(id) {
     return db.elements.find(function (element) {
       return element.id === id;
     });
+  }
+
+  function subjectById(id) {
+    return db.subjects.find(function (subject) {
+      return subject.id === id;
+    });
+  }
+
+  function subjectLabel(id) {
+    const subject = subjectById(id);
+    return subject ? subject.zh + " " + subject.en : "";
+  }
+
+  function subjectUsage(id) {
+    return db.items.filter(function (item) {
+      return item.subject === id;
+    }).length;
   }
 
   /* ---------- draft storage ---------- */
@@ -166,10 +199,10 @@
       if (!parsed || !Array.isArray(parsed.items)) return;
 
       const publishedSource = buildSource();
-      db = parsed;
+      db = normalise(parsed);
       if (buildSource() === publishedSource) {
         // The live site has caught up with this draft, so there is nothing left to restore.
-        db = clone(window.DATABANK);
+        db = normalise(window.DATABANK);
         clearDraft();
         return;
       }
@@ -273,6 +306,7 @@
     const output = {
       site: db.site,
       elements: db.elements,
+      subjects: db.subjects,
       items: db.items.map(orderFields)
     };
     return "window.DATABANK = " + formatValue(output, 0) + ";\n";
@@ -302,24 +336,32 @@
 
     db.items.forEach(function (item, index) {
       if (filterElement && item.element !== filterElement) return;
+      if (filterSubject && (item.subject || "") !== (filterSubject === "none" ? "" : filterSubject)) return;
       if (needle) {
-        const haystack = [item.title, item.subtitle, item.topic, item.form, (item.tags || []).join(" ")]
+        const haystack = [
+          item.title,
+          item.subtitle,
+          item.topic,
+          item.form,
+          subjectLabel(item.subject),
+          (item.tags || []).join(" ")
+        ]
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
         if (haystack.indexOf(needle) === -1) return;
       }
       const element = elementById(item.element);
+      const subject = subjectById(item.subject);
       rows.push(
         [
           '<button type="button" data-index="' + index + '" aria-current="' + (item === selected) + '">',
           "  <strong>" + escapeHtml(item.title || "（未命名）") + "</strong>",
           '  <span><i class="dot" style="--dot:' + escapeHtml(element ? element.accent : "#888888") + '"></i>',
           escapeHtml(
-            (element ? element.zh : "？") +
-              " · " +
-              (TYPE_LABELS[item.type] || item.type || "") +
-              (item.form ? " · " + item.form : "")
+            [element ? element.zh : "？", subject ? subject.zh : "", TYPE_LABELS[item.type] || item.type, item.form]
+              .filter(Boolean)
+              .join(" · ")
           ),
           "</span>",
           "</button>"
@@ -351,6 +393,137 @@
   }
 
   /* ---------- form ---------- */
+
+  function subjectOptionsHtml() {
+    return db.subjects
+      .map(function (subject) {
+        return (
+          '<option value="' + escapeHtml(subject.id) + '">' + escapeHtml(subject.zh + " " + subject.en) + "</option>"
+        );
+      })
+      .join("");
+  }
+
+  function fillSubjectControls() {
+    dom["f-subject"].innerHTML = '<option value="">（未分類）</option>' + subjectOptionsHtml();
+    dom["list-subject"].innerHTML =
+      '<option value="">全部科目</option>' + subjectOptionsHtml() + '<option value="none">未分類</option>';
+    dom["list-subject"].value = filterSubject;
+  }
+
+  // Keeps a subject that no longer exists visible instead of silently reassigning the item.
+  function setSubjectValue(value) {
+    fillSubjectControls();
+    if (value && !subjectById(value)) {
+      dom["f-subject"].insertAdjacentHTML(
+        "beforeend",
+        '<option value="' + escapeHtml(value) + '">（未知科目：' + escapeHtml(value) + "）</option>"
+      );
+    }
+    dom["f-subject"].value = value || "";
+  }
+
+  /* ---------- subject manager ---------- */
+
+  function subjectSlug(subject) {
+    const base = String(subject.en || subject.zh || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    const stem = base || "subject";
+    let candidate = stem;
+    let counter = 2;
+    while (subjectById(candidate)) {
+      candidate = stem + "-" + counter;
+      counter += 1;
+    }
+    return candidate;
+  }
+
+  function renderSubjectRows() {
+    if (!db.subjects.length) {
+      dom["subject-rows"].innerHTML = '<p class="repeater-empty">還未有科目，按下面「＋ 新增科目」開始。</p>';
+      return;
+    }
+    dom["subject-rows"].innerHTML = db.subjects
+      .map(function (subject, index) {
+        const used = subjectUsage(subject.id);
+        return [
+          '<div class="subject-row">',
+          '  <input type="text" data-subject-field="zh" data-index="' +
+            index +
+            '" value="' +
+            escapeHtml(subject.zh || "") +
+            '" placeholder="中文名，例：初中數學">',
+          '  <input type="text" data-subject-field="en" data-index="' +
+            index +
+            '" value="' +
+            escapeHtml(subject.en || "") +
+            '" placeholder="English, e.g. Junior Maths">',
+          '  <span class="subject-count">' + (used ? used + " 項" : "未有內容") + "</span>",
+          '  <button type="button" data-subject-move="up" data-index="' +
+            index +
+            '" aria-label="上移"' +
+            (index === 0 ? " disabled" : "") +
+            ">↑</button>",
+          '  <button type="button" data-subject-move="down" data-index="' +
+            index +
+            '" aria-label="下移"' +
+            (index === db.subjects.length - 1 ? " disabled" : "") +
+            ">↓</button>",
+          '  <button type="button" data-subject-remove="' + index + '">刪除</button>',
+          "</div>"
+        ].join("");
+      })
+      .join("");
+  }
+
+  function afterSubjectChange() {
+    const current = selected ? selected.subject || "" : "";
+    saveDraft();
+    fillSubjectControls();
+    setSubjectValue(current);
+    renderSubjectRows();
+    renderList();
+    renderPreview();
+  }
+
+  function addSubject() {
+    const subject = { id: "", zh: "新科目", en: "New Subject" };
+    subject.id = subjectSlug(subject);
+    db.subjects.push(subject);
+    afterSubjectChange();
+    const inputs = dom["subject-rows"].querySelectorAll('input[data-subject-field="zh"]');
+    if (inputs.length) {
+      inputs[inputs.length - 1].focus();
+      inputs[inputs.length - 1].select();
+    }
+  }
+
+  function removeSubject(index) {
+    const subject = db.subjects[index];
+    if (!subject) return;
+    const used = subjectUsage(subject.id);
+    const question = used
+      ? "有 " + used + " 項內容使用「" + subject.zh + "」。\n刪除科目後這些內容會變成「未分類」，內容本身不會被刪走。要繼續嗎？"
+      : "確定要刪除科目「" + subject.zh + "」嗎？";
+    if (!window.confirm(question)) return;
+
+    db.items.forEach(function (item) {
+      if (item.subject === subject.id) delete item.subject;
+    });
+    db.subjects.splice(index, 1);
+    if (filterSubject === subject.id) filterSubject = "";
+    afterSubjectChange();
+  }
+
+  function moveSubject(index, direction) {
+    const target = index + (direction === "up" ? -1 : 1);
+    if (target < 0 || target >= db.subjects.length) return;
+    const moved = db.subjects.splice(index, 1)[0];
+    db.subjects.splice(target, 0, moved);
+    afterSubjectChange();
+  }
 
   function fillElementSelect() {
     dom["f-element"].innerHTML = db.elements
@@ -387,7 +560,7 @@
     dom["f-id"].value = selected.id || "";
     dom["f-form"].value = selected.form || "";
     dom["f-topic"].value = selected.topic || "";
-    dom["f-subject"].value = selected.subject || "";
+    setSubjectValue(selected.subject);
     dom["f-level"].value = selected.level || "";
     dom["f-tla"].value = selected.tla || "";
     dom["f-duration"].value = selected.duration || "";
@@ -453,7 +626,7 @@
     const optional = {
       subtitle: dom["f-subtitle"].value.trim(),
       cover: dom["f-cover"].value.trim(),
-      subject: dom["f-subject"].value.trim(),
+      subject: dom["f-subject"].value,
       form: dom["f-form"].value.trim(),
       topic: dom["f-topic"].value.trim(),
       level: dom["f-level"].value.trim(),
@@ -502,6 +675,9 @@
     if (item.type === "video" && !item.video) problems.push("類型是影片，請選擇影片來源並填上路徑或 ID。");
     if (item.type === "image" && !item.images) problems.push("類型是圖片，請至少加入一張圖片。");
     if (item.type === "tool" && !item.tool) problems.push("類型是互動工具，請填上工具網頁路徑。");
+    if (item.subject && !subjectById(item.subject)) {
+      problems.push("科目「" + item.subject + "」已經不存在，請在科目選單重新選擇。");
+    }
 
     const duplicate = db.items.some(function (other) {
       return other !== selected && other.id && other.id === item.id;
@@ -586,13 +762,17 @@
 
   function renderPreview() {
     const element = elementById(dom["f-element"].value);
+    const subject = subjectById(dom["f-subject"].value);
     const cover = dom["f-cover"].value.trim();
     const meta = [dom["f-form"].value.trim(), dom["f-topic"].value.trim()].filter(Boolean).join(" · ");
+    const kicker = [element ? element.zh + " · " + element.en : "", subject ? subject.zh : ""]
+      .filter(Boolean)
+      .join(" · ");
 
     dom["preview-card"].innerHTML = [
       '<div class="preview-cover">' + (cover ? "" : "尚未設定封面圖") + "</div>",
       '<div class="preview-body">',
-      '  <p class="preview-kicker">' + escapeHtml(element ? element.zh + " · " + element.en : "") + "</p>",
+      '  <p class="preview-kicker">' + escapeHtml(kicker) + "</p>",
       "  <h3>" + escapeHtml(dom["f-title"].value.trim() || "（未命名）") + "</h3>",
       "  <p>" + escapeHtml(dom["f-subtitle"].value.trim()) + "</p>",
       '  <div class="preview-foot">',
@@ -783,13 +963,15 @@
     if (!window.confirm("捨棄草稿後會回到網站上現有的內容，未發佈的修改會消失。要繼續嗎？")) return;
     clearDraft();
     clearPending();
-    db = clone(window.DATABANK);
+    db = normalise(window.DATABANK);
     dirty = false;
     dom["draft-banner"].hidden = true;
     dom["draft-state"].textContent = "草稿：尚未修改";
     dom["draft-state"].classList.remove("is-dirty");
+    filterSubject = "";
     selectItem(null);
     renderTabs();
+    fillSubjectControls();
     renderDatalists();
   }
 
@@ -1038,6 +1220,7 @@
   function init() {
     loadDraft();
     fillElementSelect();
+    fillSubjectControls();
     renderTabs();
     renderList();
     renderDatalists();
@@ -1055,6 +1238,50 @@
     dom["list-search"].addEventListener("input", function (event) {
       searchText = event.target.value;
       renderList();
+    });
+
+    dom["list-subject"].addEventListener("change", function (event) {
+      filterSubject = event.target.value;
+      renderList();
+    });
+
+    dom["manage-subjects"].addEventListener("click", function () {
+      renderSubjectRows();
+      dom["subject-overlay"].hidden = false;
+      dom["add-subject"].focus();
+    });
+
+    dom["subject-rows"].addEventListener("input", function (event) {
+      const field = event.target.dataset.subjectField;
+      if (!field) return;
+      db.subjects[Number(event.target.dataset.index)][field] = event.target.value;
+      saveDraft();
+      fillSubjectControls();
+      setSubjectValue(selected ? selected.subject : "");
+      renderList();
+      renderPreview();
+    });
+
+    dom["subject-rows"].addEventListener("click", function (event) {
+      const move = event.target.closest("button[data-subject-move]");
+      if (move) {
+        moveSubject(Number(move.dataset.index), move.dataset.subjectMove);
+        return;
+      }
+      const remove = event.target.closest("button[data-subject-remove]");
+      if (remove) removeSubject(Number(remove.dataset.subjectRemove));
+    });
+
+    dom["add-subject"].addEventListener("click", addSubject);
+
+    [dom["close-subjects"], dom["done-subjects"]].forEach(function (button) {
+      button.addEventListener("click", function () {
+        dom["subject-overlay"].hidden = true;
+      });
+    });
+
+    dom["subject-overlay"].addEventListener("click", function (event) {
+      if (event.target === dom["subject-overlay"]) dom["subject-overlay"].hidden = true;
     });
 
     dom["admin-items"].addEventListener("click", function (event) {
@@ -1158,7 +1385,9 @@
     });
 
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") dom["publish-overlay"].hidden = true;
+      if (event.key !== "Escape") return;
+      dom["publish-overlay"].hidden = true;
+      dom["subject-overlay"].hidden = true;
     });
 
     window.addEventListener("beforeunload", function (event) {

@@ -34,6 +34,7 @@
         <div class="admin-list-head">
           <button class="button block" id="new-item" type="button">＋ 新增內容</button>
           <input id="list-search" type="search" placeholder="搜尋標題、標籤…" autocomplete="off">
+          <select id="list-subject" aria-label="按科目篩選清單"></select>
           <div class="element-tabs" id="element-tabs"></div>
         </div>
         <div class="admin-items" id="admin-items"></div>
@@ -104,6 +105,13 @@
           <fieldset class="form-section">
             <legend>2. 分類與篩選</legend>
             <div class="field-grid">
+              <div class="field span-2">
+                <span>科目 Subject　<small>決定內容出現在哪一個科目頁</small></span>
+                <span class="input-with-button">
+                  <select name="subject" id="f-subject"></select>
+                  <button class="button ghost" id="manage-subjects" type="button">管理科目</button>
+                </span>
+              </div>
               <label class="field">
                 <span>年級 Form　<small>首頁篩選會用到</small></span>
                 <input name="form" id="f-form" type="text" list="form-list" placeholder="S2">
@@ -113,10 +121,6 @@
                 <span>主題 Topic　<small>首頁篩選會用到</small></span>
                 <input name="topic" id="f-topic" type="text" list="topic-list" placeholder="JM12 · Identities and Factorization">
                 <datalist id="topic-list"></datalist>
-              </label>
-              <label class="field">
-                <span>科目</span>
-                <input name="subject" id="f-subject" type="text" placeholder="Mathematics · Identities and Factorization">
               </label>
               <label class="field">
                 <span>深度 Y 軸</span>
@@ -224,6 +228,25 @@
           </aside>
         </form>
       </main>
+    </div>
+
+    <div class="publish-overlay" id="subject-overlay" hidden>
+      <div class="publish-panel subject-panel" role="dialog" aria-modal="true" aria-labelledby="subject-title">
+        <div class="publish-head">
+          <h2 id="subject-title">管理科目</h2>
+          <button class="icon-button" id="close-subjects" type="button" aria-label="關閉">×</button>
+        </div>
+        <p class="section-hint">
+          這裡加減的科目，會即時出現在網站首頁的「按科目瀏覽」和內容的科目選單。<br>
+          改名不會影響已分類的內容，例如把「數學」改成「初中數學」，再新增一個「高中數學」，然後逐項內容改選新科目就可以。<br>
+          刪除一個仍有內容的科目，那些內容會變成「未分類」，不會被刪走。
+        </p>
+        <div class="subject-rows" id="subject-rows"></div>
+        <div class="publish-actions">
+          <button class="button" id="add-subject" type="button">＋ 新增科目</button>
+          <button class="button ghost" id="done-subjects" type="button">完成</button>
+        </div>
+      </div>
     </div>
 
     <div class="publish-overlay" id="publish-overlay" hidden>

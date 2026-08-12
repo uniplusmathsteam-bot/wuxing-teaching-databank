@@ -292,7 +292,7 @@ main {
 
 .hero-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
   gap: 1px;
   margin-top: 24px;
   overflow: hidden;
@@ -341,6 +341,92 @@ main {
   margin: 0;
   color: var(--muted);
   font-size: 13px;
+}
+
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.subject-card {
+  display: grid;
+  gap: 2px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.subject-card:hover {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  transform: translateY(-2px);
+}
+
+.subject-card strong {
+  font-family: Georgia, "Noto Serif TC", serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.subject-card span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.subject-card em {
+  margin-top: 8px;
+  color: var(--accent);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.subject-card.is-empty {
+  border-style: dashed;
+}
+
+.subject-card.is-empty strong,
+.subject-card.is-empty em {
+  color: var(--faint);
+}
+
+.subject-hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 34px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+}
+
+.subject-hero h1 {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 0;
+  font-family: Georgia, "Noto Serif TC", serif;
+  font-size: clamp(34px, 5vw, 54px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.subject-hero h1 span {
+  color: var(--muted);
+  font-size: 0.42em;
+  letter-spacing: 0.04em;
+}
+
+.subject-hero-meta {
+  max-width: 360px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
 }
 
 .overview-section {
@@ -1443,6 +1529,25 @@ main {
   .section-heading {
     flex-direction: column;
     gap: 3px;
+  }
+
+  .subject-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .subject-hero h1 {
+    flex-wrap: wrap;
+    gap: 0 12px;
+  }
+
+  .subject-hero-meta {
+    text-align: left;
+  }
+
+  .subject-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 
   .gallery-grid.is-list .content-card > a {

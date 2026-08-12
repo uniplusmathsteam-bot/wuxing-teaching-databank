@@ -96,7 +96,8 @@ textarea {
   border-bottom: 1px solid var(--line);
 }
 
-.admin-list-head input {
+.admin-list-head input,
+.admin-list-head select {
   width: 100%;
   padding: 9px 12px;
   border: 1px solid var(--line);
@@ -450,6 +451,62 @@ textarea {
   color: var(--muted);
   cursor: pointer;
   font-size: 12px;
+}
+
+.subject-panel {
+  width: min(680px, 100%);
+}
+
+.subject-rows {
+  display: grid;
+  gap: 8px;
+}
+
+.subject-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto auto auto auto;
+  align-items: center;
+}
+
+.subject-row input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 13.5px;
+}
+
+.subject-row input:focus {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  outline: none;
+}
+
+.subject-row button {
+  padding: 7px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.subject-row button:hover:not(:disabled) {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  color: var(--text);
+}
+
+.subject-row button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.subject-count {
+  color: var(--faint);
+  font-size: 11.5px;
+  white-space: nowrap;
 }
 
 .repeater-empty {

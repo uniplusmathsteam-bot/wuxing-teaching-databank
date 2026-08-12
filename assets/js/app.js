@@ -26,9 +26,12 @@
     type: "",
     form: "",
     topic: "",
+    subject: "",
+    element: "",
     sort: "newest",
     view: readStorage("wuxing-view") || "grid",
-    currentElement: ""
+    currentElement: "",
+    currentSubject: ""
   };
 
   function readStorage(key) {
@@ -57,6 +60,28 @@
     return data.items.find(function (item) {
       return item.id === id;
     });
+  }
+
+  function subjectById(id) {
+    return (data.subjects || []).find(function (subject) {
+      return subject.id === id;
+    });
+  }
+
+  function subjectName(id) {
+    const subject = subjectById(id);
+    return subject ? subject.zh : "";
+  }
+
+  function subjectFullName(id) {
+    const subject = subjectById(id);
+    return subject ? subject.zh + " · " + subject.en : "";
+  }
+
+  function countBySubject(id) {
+    return data.items.filter(function (item) {
+      return item.subject === id;
+    }).length;
   }
 
   function itemElement(item) {
@@ -113,13 +138,15 @@
       item.duration ? '      <span class="duration">' + escapeHtml(item.duration) + "</span>" : "",
       "    </div>",
       '    <div class="card-body">',
-      '      <p class="card-kicker">' + escapeHtml(element.zh + " · " + element.en) + "</p>",
+      '      <p class="card-kicker">' +
+        escapeHtml([element.zh + " · " + element.en, subjectName(item.subject)].filter(Boolean).join(" · ")) +
+        "</p>",
       "      <h3>" + escapeHtml(item.title) + "</h3>",
       '      <p class="card-subtitle">' + escapeHtml(item.subtitle || "") + "</p>",
       '      <div class="tag-list">' + renderTags(item.tags, 3) + "</div>",
       '      <div class="card-footer">',
       "        <span>" +
-        escapeHtml([item.form, item.topic].filter(Boolean).join(" · ") || item.subject || "綜合") +
+        escapeHtml([item.form, item.topic].filter(Boolean).join(" · ") || subjectName(item.subject) || "綜合") +
         "</span>",
       "        <span>" + escapeHtml(formatDate(item.date)) + "</span>",
       "      </div>",
@@ -157,6 +184,19 @@
       })
     ).size;
 
+    const subjectCards = (data.subjects || [])
+      .map(function (subject) {
+        const count = countBySubject(subject.id);
+        return [
+          '<a class="subject-card' + (count ? "" : " is-empty") + '" href="#/subject/' + escapeHtml(subject.id) + '">',
+          "  <strong>" + escapeHtml(subject.zh) + "</strong>",
+          "  <span>" + escapeHtml(subject.en) + "</span>",
+          "  <em>" + (count ? count + " 項內容" : "尚未有內容") + "</em>",
+          "</a>"
+        ].join("");
+      })
+      .join("");
+
     const elementCards = data.elements
       .map(function (element) {
         const count = data.items.filter(function (item) {
@@ -191,6 +231,7 @@
       '    <p class="hero-copy">把真實教學影片與五行戰術文章，依照金、木、水、火、土整理成可搜尋的教學武器庫。</p>',
       '    <div class="hero-stats">',
       '      <div class="stat"><strong>5</strong><span>戰術模組</span></div>',
+      '      <div class="stat"><strong>' + (data.subjects || []).length + '</strong><span>科目</span></div>',
       '      <div class="stat"><strong>' + data.items.length + '</strong><span>教學資源</span></div>',
       '      <div class="stat"><strong>' + contentTypeCount + '</strong><span>內容類型</span></div>',
       "    </div>",
@@ -215,6 +256,12 @@
       "  </div>",
       '  <div class="element-grid">' + elementCards + "</div>",
       "</section>",
+      "<section>",
+      '  <div class="section-heading">',
+      "    <div><h2>按科目瀏覽</h2><p>同一科目的資源，橫跨五種教學風格</p></div>",
+      "  </div>",
+      '  <div class="subject-grid">' + subjectCards + "</div>",
+      "</section>",
       '<section class="recent-section">',
       '  <div class="section-heading">',
       "    <div><h2>精選教學資源</h2><p>由五行武器庫挑選的示範內容</p></div>",
@@ -224,37 +271,130 @@
     ].join("");
   }
 
-  function getFilteredElementItems(elementId) {
-    let items = data.items.filter(function (item) {
-      return item.element === elementId;
-    });
-    if (state.tag) {
-      items = items.filter(function (item) {
-        return (item.tags || []).includes(state.tag);
-      });
-    }
-    if (state.type) {
-      items = items.filter(function (item) {
+  // Element pages fix the element and let subject vary; subject pages do the opposite.
+  // Whichever axis the page owns keeps its state key empty, so the same filters serve both.
+  function refineItems(items) {
+    const filters = {
+      element: function (item) {
+        return item.element === state.element;
+      },
+      subject: function (item) {
+        return item.subject === state.subject;
+      },
+      type: function (item) {
         return item.type === state.type;
-      });
-    }
-    if (state.form) {
-      items = items.filter(function (item) {
+      },
+      form: function (item) {
         return item.form === state.form;
-      });
-    }
-    if (state.topic) {
-      items = items.filter(function (item) {
+      },
+      topic: function (item) {
         return item.topic === state.topic;
-      });
-    }
+      },
+      tag: function (item) {
+        return (item.tags || []).includes(state.tag);
+      }
+    };
 
-    items.sort(function (a, b) {
+    let refined = items;
+    Object.keys(filters).forEach(function (key) {
+      if (state[key]) refined = refined.filter(filters[key]);
+    });
+
+    return refined.slice().sort(function (a, b) {
       if (state.sort === "oldest") return (a.date || "").localeCompare(b.date || "");
       if (state.sort === "title") return a.title.localeCompare(b.title, "zh-Hant");
       return (b.date || "").localeCompare(a.date || "");
     });
-    return items;
+  }
+
+  function uniqueValues(items, key) {
+    return Array.from(
+      new Set(
+        items
+          .map(function (item) {
+            return item[key];
+          })
+          .filter(Boolean)
+      )
+    ).sort(function (a, b) {
+      return String(a).localeCompare(String(b), "en", { numeric: true });
+    });
+  }
+
+  function selectOptions(options, selected, allLabel) {
+    return ['<option value="">' + allLabel + "</option>"]
+      .concat(
+        options.map(function (option) {
+          return (
+            '<option value="' +
+            escapeHtml(option.value) +
+            '"' +
+            (selected === option.value ? " selected" : "") +
+            ">" +
+            escapeHtml(option.label) +
+            "</option>"
+          );
+        })
+      )
+      .join("");
+  }
+
+  function plainOptions(values) {
+    return values.map(function (value) {
+      return { value: value, label: value };
+    });
+  }
+
+  function typeFilterButtons(items) {
+    const available = ["video", "image", "article", "tool"].filter(function (type) {
+      return items.some(function (item) {
+        return item.type === type;
+      });
+    });
+    return [""]
+      .concat(available)
+      .map(function (type) {
+        return (
+          '<button class="type-filter ' +
+          (state.type === type ? "is-active" : "") +
+          '" type="button" data-type="' +
+          type +
+          '">' +
+          (type ? typeLabel(type) : "所有類型") +
+          "</button>"
+        );
+      })
+      .join("");
+  }
+
+  function sortAndViewControls() {
+    return [
+      '      <label class="select-wrap"><select id="sort-select" aria-label="排序內容">',
+      '        <option value="newest"' + (state.sort === "newest" ? " selected" : "") + ">最新加入</option>",
+      '        <option value="oldest"' + (state.sort === "oldest" ? " selected" : "") + ">最早加入</option>",
+      '        <option value="title"' + (state.sort === "title" ? " selected" : "") + ">標題排序</option>",
+      "      </select></label>",
+      '      <div class="segmented" aria-label="檢視方式">',
+      '        <button type="button" data-view="grid" class="' +
+        (state.view === "grid" ? "is-active" : "") +
+        '" aria-label="圖庫檢視">▦</button>',
+      '        <button type="button" data-view="list" class="' +
+        (state.view === "list" ? "is-active" : "") +
+        '" aria-label="列表檢視">☷</button>',
+      "      </div>"
+    ].join("");
+  }
+
+  // Topics belong to a form, so narrow the list once a form is chosen and drop a stale selection.
+  function topicOptionsFor(items) {
+    const topics = uniqueValues(
+      items.filter(function (item) {
+        return !state.form || item.form === state.form;
+      }),
+      "topic"
+    );
+    if (state.topic && !topics.includes(state.topic)) state.topic = "";
+    return selectOptions(plainOptions(topics), state.topic, "全部主題");
   }
 
   function renderElement(element, preserveFilters) {
@@ -263,9 +403,12 @@
       state.type = "";
       state.form = "";
       state.topic = "";
+      state.subject = "";
       state.sort = "newest";
     }
+    state.element = "";
     state.currentElement = element.id;
+    state.currentSubject = "";
     setAccent(element);
     searchInput.value = "";
     document.title = element.zh + " · " + element.en + " | " + data.site.title;
@@ -280,35 +423,7 @@
         }, [])
       )
     );
-    const forms = Array.from(
-      new Set(
-        allItems
-          .map(function (item) {
-            return item.form;
-          })
-          .filter(Boolean)
-      )
-    ).sort(function (a, b) {
-      return a.localeCompare(b, "en", { numeric: true });
-    });
-    const topics = Array.from(
-      new Set(
-        allItems
-          .filter(function (item) {
-            return !state.form || item.form === state.form;
-          })
-          .map(function (item) {
-            return item.topic;
-          })
-          .filter(Boolean)
-      )
-    ).sort(function (a, b) {
-      return a.localeCompare(b, "en", { numeric: true });
-    });
-    if (state.topic && !topics.includes(state.topic)) {
-      state.topic = "";
-    }
-    const visibleItems = getFilteredElementItems(element.id);
+    const visibleItems = refineItems(allItems);
 
     const tagButtons = [
       '<button class="tag-filter ' + (!state.tag ? "is-active" : "") + '" type="button" data-tag="">全部</button>'
@@ -328,54 +443,15 @@
       )
       .join("");
 
-    const availableTypes = ["video", "image", "article", "tool"].filter(function (type) {
-      return allItems.some(function (item) {
-        return item.type === type;
-      });
-    });
-    const typeButtons = [""].concat(availableTypes)
-      .map(function (type) {
-        return (
-          '<button class="type-filter ' +
-          (state.type === type ? "is-active" : "") +
-          '" type="button" data-type="' +
-          type +
-          '">' +
-          (type ? typeLabel(type) : "所有類型") +
-          "</button>"
-        );
-      })
-      .join("");
-    const formOptions = ['<option value="">全部年級</option>']
-      .concat(
-        forms.map(function (form) {
-          return (
-            '<option value="' +
-            escapeHtml(form) +
-            '"' +
-            (state.form === form ? " selected" : "") +
-            ">" +
-            escapeHtml(form) +
-            "</option>"
-          );
-        })
-      )
-      .join("");
-    const topicOptions = ['<option value="">全部主題</option>']
-      .concat(
-        topics.map(function (topic) {
-          return (
-            '<option value="' +
-            escapeHtml(topic) +
-            '"' +
-            (state.topic === topic ? " selected" : "") +
-            ">" +
-            escapeHtml(topic) +
-            "</option>"
-          );
-        })
-      )
-      .join("");
+    const subjectOptions = selectOptions(
+      uniqueValues(allItems, "subject").map(function (id) {
+        return { value: id, label: subjectName(id) || id };
+      }),
+      state.subject,
+      "全部科目"
+    );
+    const formOptions = selectOptions(plainOptions(uniqueValues(allItems, "form")), state.form, "全部年級");
+    const topicOptions = topicOptionsFor(allItems);
 
     main.innerHTML = [
       '<nav class="breadcrumb" aria-label="頁面路徑">',
@@ -405,7 +481,97 @@
       "</section>",
       "<section>",
       '  <div class="gallery-toolbar">',
-      '    <div class="filter-group" aria-label="內容類型">' + typeButtons + "</div>",
+      '    <div class="filter-group" aria-label="內容類型">' + typeFilterButtons(allItems) + "</div>",
+      '    <div class="view-controls">',
+      '      <label class="select-wrap"><select id="subject-filter" aria-label="按科目篩選">' +
+        subjectOptions +
+        "</select></label>",
+      '      <label class="select-wrap"><select id="form-filter" aria-label="按年級篩選">' +
+        formOptions +
+        "</select></label>",
+      '      <label class="select-wrap"><select id="topic-filter" aria-label="按主題篩選">' +
+        topicOptions +
+        "</select></label>",
+      sortAndViewControls(),
+      "    </div>",
+      "  </div>",
+      '  <div class="filter-group" aria-label="標籤篩選">' + tagButtons + "</div>",
+      '  <p class="results-meta">' + visibleItems.length + " / " + allItems.length + " 項內容</p>",
+      cards(visibleItems, state.view === "list" ? "is-list" : ""),
+      "</section>"
+    ].join("");
+  }
+
+  function renderSubject(subject, preserveFilters) {
+    if (!preserveFilters || state.currentSubject !== subject.id) {
+      state.tag = "";
+      state.type = "";
+      state.form = "";
+      state.topic = "";
+      state.element = "";
+      state.sort = "newest";
+    }
+    state.subject = "";
+    state.currentSubject = subject.id;
+    state.currentElement = "";
+    setAccent(null);
+    searchInput.value = "";
+    document.title = subject.zh + " · " + subject.en + " | " + data.site.title;
+
+    const allItems = data.items.filter(function (item) {
+      return item.subject === subject.id;
+    });
+    const visibleItems = refineItems(allItems);
+
+    const elementButtons = [
+      '<button class="type-filter ' +
+        (!state.element ? "is-active" : "") +
+        '" type="button" data-element-filter="">全部五行</button>'
+    ]
+      .concat(
+        data.elements
+          .filter(function (element) {
+            return allItems.some(function (item) {
+              return item.element === element.id;
+            });
+          })
+          .map(function (element) {
+            return (
+              '<button class="type-filter ' +
+              (state.element === element.id ? "is-active" : "") +
+              '" type="button" data-element-filter="' +
+              escapeHtml(element.id) +
+              '">' +
+              escapeHtml(element.zh + " " + element.en) +
+              "</button>"
+            );
+          })
+      )
+      .join("");
+
+    const formOptions = selectOptions(plainOptions(uniqueValues(allItems, "form")), state.form, "全部年級");
+    const topicOptions = topicOptionsFor(allItems);
+
+    main.innerHTML = [
+      '<nav class="breadcrumb" aria-label="頁面路徑">',
+      '  <a href="#/">首頁</a><span class="separator">/</span><span aria-current="page">' +
+        escapeHtml(subject.zh + " · " + subject.en) +
+        "</span>",
+      "</nav>",
+      '<section class="subject-hero">',
+      "  <div>",
+      '    <p class="eyebrow">Subject</p>',
+      "    <h1>" + escapeHtml(subject.zh) + "<span>" + escapeHtml(subject.en) + "</span></h1>",
+      "  </div>",
+      '  <p class="subject-hero-meta">' +
+        (allItems.length
+          ? "共 " + allItems.length + " 項教學資源，橫跨 " + uniqueValues(allItems, "element").length + " 種五行風格。"
+          : "這一科還未有內容。可以在內容編輯器新增第一項資源。") +
+        "</p>",
+      "</section>",
+      "<section>",
+      '  <div class="gallery-toolbar">',
+      '    <div class="filter-group" aria-label="內容類型">' + typeFilterButtons(allItems) + "</div>",
       '    <div class="view-controls">',
       '      <label class="select-wrap"><select id="form-filter" aria-label="按年級篩選">' +
         formOptions +
@@ -413,22 +579,10 @@
       '      <label class="select-wrap"><select id="topic-filter" aria-label="按主題篩選">' +
         topicOptions +
         "</select></label>",
-      '      <label class="select-wrap"><select id="sort-select" aria-label="排序內容">',
-      '        <option value="newest"' + (state.sort === "newest" ? " selected" : "") + ">最新加入</option>",
-      '        <option value="oldest"' + (state.sort === "oldest" ? " selected" : "") + ">最早加入</option>",
-      '        <option value="title"' + (state.sort === "title" ? " selected" : "") + ">標題排序</option>",
-      "      </select></label>",
-      '      <div class="segmented" aria-label="檢視方式">',
-      '        <button type="button" data-view="grid" class="' +
-        (state.view === "grid" ? "is-active" : "") +
-        '" aria-label="圖庫檢視">▦</button>',
-      '        <button type="button" data-view="list" class="' +
-        (state.view === "list" ? "is-active" : "") +
-        '" aria-label="列表檢視">☷</button>',
-      "      </div>",
+      sortAndViewControls(),
       "    </div>",
       "  </div>",
-      '  <div class="filter-group" aria-label="標籤篩選">' + tagButtons + "</div>",
+      '  <div class="filter-group" aria-label="五行篩選">' + elementButtons + "</div>",
       '  <p class="results-meta">' + visibleItems.length + " / " + allItems.length + " 項內容</p>",
       cards(visibleItems, state.view === "list" ? "is-list" : ""),
       "</section>"
@@ -440,7 +594,7 @@
     return [
       item.title,
       item.subtitle,
-      item.subject,
+      subjectFullName(item.subject),
       item.form,
       item.topic,
       item.level,
@@ -548,7 +702,12 @@
       '    <dl class="property-list">',
       property("五行", element.zh + " · " + element.en),
       property("類型", typeLabel(item.type)),
-      property("科目", escapeHtml(item.subject)),
+      property(
+        "科目",
+        subjectById(item.subject)
+          ? '<a href="#/subject/' + escapeHtml(item.subject) + '">' + escapeHtml(subjectFullName(item.subject)) + "</a>"
+          : ""
+      ),
       property("年級", escapeHtml(item.form)),
       property("主題", escapeHtml(item.topic)),
       property("深度", escapeHtml(item.level)),
@@ -626,6 +785,10 @@
       renderAbout();
     } else if (parts[0] === "search") {
       renderSearch(current.params.get("q") || "");
+    } else if (parts[0] === "subject") {
+      const subject = subjectById(parts[1]);
+      if (subject) renderSubject(subject, false);
+      else renderNotFound();
     } else {
       const element = elementById(parts[0]);
       if (!element) {
@@ -642,7 +805,12 @@
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
-  function updateElementView() {
+  function updateCurrentView() {
+    if (state.currentSubject) {
+      const subject = subjectById(state.currentSubject);
+      if (subject) renderSubject(subject, true);
+      return;
+    }
     const element = elementById(state.currentElement);
     if (element) renderElement(element, true);
   }
@@ -675,14 +843,21 @@
     const tagButton = event.target.closest("[data-tag]");
     if (tagButton) {
       state.tag = tagButton.dataset.tag;
-      updateElementView();
+      updateCurrentView();
       return;
     }
 
     const typeButton = event.target.closest("[data-type]");
     if (typeButton) {
       state.type = typeButton.dataset.type;
-      updateElementView();
+      updateCurrentView();
+      return;
+    }
+
+    const elementButton = event.target.closest("[data-element-filter]");
+    if (elementButton) {
+      state.element = elementButton.dataset.elementFilter;
+      updateCurrentView();
       return;
     }
 
@@ -690,25 +865,30 @@
     if (viewButton) {
       state.view = viewButton.dataset.view;
       writeStorage("wuxing-view", state.view);
-      updateElementView();
+      updateCurrentView();
     }
   });
 
   document.addEventListener("change", function (event) {
+    if (event.target.id === "subject-filter") {
+      state.subject = event.target.value;
+      updateCurrentView();
+      return;
+    }
     if (event.target.id === "form-filter") {
       state.form = event.target.value;
       state.topic = "";
-      updateElementView();
+      updateCurrentView();
       return;
     }
     if (event.target.id === "topic-filter") {
       state.topic = event.target.value;
-      updateElementView();
+      updateCurrentView();
       return;
     }
     if (event.target.id === "sort-select") {
       state.sort = event.target.value;
-      updateElementView();
+      updateCurrentView();
     }
   });
 
