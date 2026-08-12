@@ -76,7 +76,9 @@
     "commit-message",
     "publish-direct-btn",
     "publish-status",
+    "publish-validation",
     "site-link",
+    "remember-token",
     "f-element",
     "f-type",
     "f-title",
@@ -581,7 +583,7 @@
     renderTagPreview();
     renderHeading();
     renderPreview();
-    renderErrors(validate(readForm()));
+    renderErrors(validate(readForm(), selected));
     renderList();
   }
 
@@ -666,11 +668,13 @@
     return orderFields(item);
   }
 
-  function validate(item) {
+  function validate(item, currentItem) {
     const problems = [];
     if (!item.title) problems.push("請填寫標題。");
     if (!item.id) problems.push("請填寫網址代號 ID。");
     else if (!/^[a-z0-9][a-z0-9-]*$/.test(item.id)) problems.push("網址代號 ID 只可以用小寫英文字母、數字和「-」。");
+    if (!elementById(item.element)) problems.push("請選擇有效的五行分類。");
+    if (!TYPE_LABELS[item.type]) problems.push("請選擇有效的內容類型。");
     if (!item.cover) problems.push("請填寫封面圖路徑，否則卡片會顯示空白。");
     if (item.type === "video" && !item.video) problems.push("類型是影片，請選擇影片來源並填上路徑或 ID。");
     if (item.type === "image" && !item.images) problems.push("類型是圖片，請至少加入一張圖片。");
@@ -680,17 +684,57 @@
     }
 
     const duplicate = db.items.some(function (other) {
-      return other !== selected && other.id && other.id === item.id;
+      return other !== (currentItem || item) && other.id && other.id === item.id;
     });
     if (duplicate) problems.push("網址代號 ID 已經有其他內容使用，請改一個。");
     return problems;
+  }
+
+  function validateAll() {
+    const results = [];
+    const subjectIds = {};
+
+    db.subjects.forEach(function (subject, index) {
+      const problems = [];
+      if (!subject.id || !/^[a-z0-9][a-z0-9-]*$/.test(subject.id)) problems.push("科目 ID 格式無效。");
+      if (!String(subject.zh || "").trim()) problems.push("請填寫科目中文名。");
+      if (!String(subject.en || "").trim()) problems.push("請填寫科目英文名。");
+      if (subject.id && subjectIds[subject.id]) problems.push("科目 ID 重複。");
+      subjectIds[subject.id] = true;
+      if (problems.length) {
+        results.push({ label: "科目 " + (subject.zh || subject.en || index + 1), problems: problems });
+      }
+    });
+
+    db.items.forEach(function (item, index) {
+      const problems = validate(item, item);
+      if (problems.length) {
+        results.push({ label: item.title || "未命名內容 " + (index + 1), problems: problems });
+      }
+    });
+    return results;
+  }
+
+  function renderPublishValidation(results) {
+    dom["publish-validation"].hidden = !results.length;
+    dom["publish-validation"].innerHTML = results.length
+      ? "<strong>發佈前請先修正 " +
+        results.length +
+        " 項問題：</strong><ul>" +
+        results
+          .map(function (result) {
+            return "<li><strong>" + escapeHtml(result.label) + "：</strong>" + escapeHtml(result.problems.join("、")) + "</li>";
+          })
+          .join("") +
+        "</ul>"
+      : "";
   }
 
   function commitForm() {
     if (!selected) return;
 
     const next = readForm();
-    renderErrors(validate(next));
+    renderErrors(validate(next, selected));
 
     // The draft always stores what was typed, even while it is still incomplete.
     Object.keys(selected).forEach(function (key) {
@@ -976,11 +1020,15 @@
   }
 
   function openPublish() {
+    const validation = validateAll();
     dom["publish-source"].value = buildSource();
     dom["github-link"].href = EDIT_URL;
     dom["site-link"].href = SITE_URL;
     dom["gh-token"].value = readToken();
+    dom["remember-token"].checked = Boolean(dom["gh-token"].value);
     dom["publish-status"].hidden = true;
+    renderPublishValidation(validation);
+    dom["publish-direct-btn"].disabled = validation.length > 0;
 
     const waiting = Object.keys(pending);
     dom["pending-summary"].hidden = !waiting.length;
@@ -990,7 +1038,7 @@
       : "";
 
     dom["publish-overlay"].hidden = false;
-    (dom["gh-token"].value ? dom["publish-direct-btn"] : dom["gh-token"]).focus();
+    (validation.length ? dom["publish-validation"] : dom["gh-token"].value ? dom["publish-direct-btn"] : dom["gh-token"]).focus();
   }
 
   /* ---------- one-click publishing ---------- */
@@ -1044,10 +1092,10 @@
     try {
       const shim = {};
       new Function("window", remoteText)(shim);
+      if (!shim.DATABANK) return null;
       return JSON.stringify(canonical(shim.DATABANK)) === JSON.stringify(canonical(window.DATABANK));
     } catch (_) {
-      // An unreadable remote file is treated as a match so the publish is not blocked.
-      return true;
+      return null;
     }
   }
 
@@ -1076,7 +1124,9 @@
     if (error.status === 401) return "權杖無效或已過期，請重新產生一個。";
     if (error.status === 403) return "權杖沒有寫入權限，請確認 Contents 設為 Read and write。";
     if (error.status === 404) return "找不到檔案或沒有這個 repository 的權限，請確認權杖已授權 " + REPO + "。";
-    if (error.status === 409 || error.status === 422) return "GitHub 上的檔案剛剛被更新，請再按一次發佈。";
+    if (error.status === 409 || error.status === 422) {
+      return "GitHub 上的內容剛剛被其他人更新。請重新載入編輯器並核對最新內容，不要直接重試覆蓋。";
+    }
     if (error.status) return "GitHub 回覆錯誤（" + error.status + "）：" + error.message;
     return "無法連線到 GitHub，請檢查網絡後再試。";
   }
@@ -1110,10 +1160,23 @@
   }
 
   async function publishDirect() {
+    const validation = validateAll();
+    renderPublishValidation(validation);
+    if (validation.length) {
+      status("發佈已暫停：請先修正上面列出的內容問題。", "error");
+      return;
+    }
+
     const token = dom["gh-token"].value.trim();
     if (!token) {
       status("請先貼上 GitHub 存取權杖。", "error");
       dom["gh-token"].focus();
+      return;
+    }
+    const note = dom["commit-message"].value.trim();
+    if (!note) {
+      status("請填寫這次更新的說明，方便其他導師在 GitHub 記錄中辨認改動。", "error");
+      dom["commit-message"].focus();
       return;
     }
 
@@ -1123,12 +1186,15 @@
     const uploaded = Object.keys(pending).length;
 
     try {
-      await uploadPendingFiles();
-
-      status("正在讀取 GitHub 上的現有內容…");
+      status("正在檢查 GitHub 上的最新內容…");
       const current = await githubFetch(apiUrl);
+      const versionMatch = matchesLoadedVersion(decodeBase64(current.content));
 
-      if (!matchesLoadedVersion(decodeBase64(current.content))) {
+      if (versionMatch === null) {
+        status("無法安全讀取 GitHub 上的 content.js，為免覆蓋現有資料，發佈已停止。請聯絡管理員。", "error");
+        return;
+      }
+      if (!versionMatch) {
         const proceed = window.confirm(
           "GitHub 上的內容跟你開啟編輯器時不一樣，可能有其他人已經發佈了新內容。\n" +
             "繼續發佈會覆蓋他們的修改。要繼續嗎？"
@@ -1139,23 +1205,28 @@
         }
       }
 
+      await uploadPendingFiles();
+
       status("正在發佈到 GitHub…");
-      const note = dom["commit-message"].value.trim();
+      const publishedSource = buildSource();
       await githubFetch(contentsUrl(CONTENT_PATH), {
         method: "PUT",
         body: JSON.stringify({
-          message: note ? "Update content: " + note : "Update content via editor",
-          content: encodeBase64(buildSource()),
+          message: "Update content: " + note,
+          content: encodeBase64(publishedSource),
           sha: current.sha,
           branch: BRANCH
         })
       });
 
       try {
-        localStorage.setItem(TOKEN_KEY, token);
+        if (dom["remember-token"].checked) localStorage.setItem(TOKEN_KEY, token);
+        else localStorage.removeItem(TOKEN_KEY);
       } catch (_) {
-        // Publishing already succeeded; only remembering the token failed.
+        // Publishing already succeeded; only the local token preference failed.
       }
+      window.DATABANK = clone(db);
+      clearDraft();
       dirty = false;
       dom["commit-message"].value = "";
       dom["draft-state"].textContent = "已發佈到 GitHub";
@@ -1170,7 +1241,7 @@
     } catch (error) {
       status(describeError(error), "error");
     } finally {
-      dom["publish-direct-btn"].disabled = false;
+      dom["publish-direct-btn"].disabled = validateAll().length > 0;
     }
   }
 
@@ -1181,6 +1252,7 @@
       // Nothing to clean up when storage is unavailable.
     }
     dom["gh-token"].value = "";
+    dom["remember-token"].checked = false;
     status("已清除這部電腦記住的權杖。", "ok");
     dom["gh-token"].focus();
   }

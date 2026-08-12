@@ -6,6 +6,7 @@
       ? window.WuxingMarkdown.escape(value)
       : String(value ?? "").replace(/[&<>"']/g, "");
   };
+  let lightboxTrigger = null;
 
   function sanitizeId(value) {
     return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "");
@@ -97,7 +98,7 @@
     button.replaceWith(iframe);
   }
 
-  function openLightbox(source, alt) {
+  function openLightbox(source, alt, trigger) {
     const lightbox = document.getElementById("lightbox");
     if (!lightbox) return;
     const image = lightbox.querySelector("img");
@@ -105,6 +106,7 @@
     image.src = source;
     image.alt = alt || "";
     caption.textContent = alt || "";
+    lightboxTrigger = trigger || document.activeElement;
     lightbox.hidden = false;
     document.body.style.overflow = "hidden";
     lightbox.querySelector(".lightbox-close").focus();
@@ -116,6 +118,29 @@
     lightbox.hidden = true;
     document.body.style.overflow = "";
     lightbox.querySelector("img").src = "";
+    if (lightboxTrigger && lightboxTrigger.isConnected) lightboxTrigger.focus();
+    lightboxTrigger = null;
+  }
+
+  function trapLightboxFocus(event) {
+    const lightbox = document.getElementById("lightbox");
+    if (!lightbox || lightbox.hidden || event.key !== "Tab") return;
+    const focusable = Array.from(
+      lightbox.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')
+    );
+    if (!focusable.length) {
+      event.preventDefault();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   function init() {
@@ -128,7 +153,7 @@
 
       const imageButton = event.target.closest("[data-lightbox-src]");
       if (imageButton) {
-        openLightbox(imageButton.dataset.lightboxSrc, imageButton.dataset.lightboxAlt);
+        openLightbox(imageButton.dataset.lightboxSrc, imageButton.dataset.lightboxAlt, imageButton);
         return;
       }
 
@@ -139,6 +164,7 @@
 
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape") closeLightbox();
+      else trapLightboxFocus(event);
     });
   }
 

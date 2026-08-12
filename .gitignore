@@ -3,5 +3,8 @@
 
 # Local verification artifacts.
 verify-*.png
+node_modules/
+test-results/
+playwright-report/
 # Keep full-length source recordings local; publish only edited media clips.
 raw-videos/*.mp4

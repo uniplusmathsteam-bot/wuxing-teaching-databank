@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="五行教學資料庫：以金、木、水、火、土整理教學影片、圖片、文章與互動工具。">
     <meta name="theme-color" content="#11100f">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_HK">
+    <meta property="og:title" content="五行教學資料庫">
+    <meta property="og:description" content="以金、木、水、火、土整理可搜尋的教學示範、教案與互動工具。">
+    <meta property="og:url" content="https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/">
+    <meta property="og:image" content="https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/media/metal/tactical-module-cover.png">
+    <meta name="twitter:card" content="summary_large_image">
     <title>五行教學資料庫</title>
     <link rel="stylesheet" href="assets/css/styles.css">
   </head>
@@ -19,6 +26,11 @@
             <small>Wuxing Teaching Databank</small>
           </span>
         </a>
+        <nav class="site-nav" aria-label="主要導覽">
+          <a href="#/">首頁</a>
+          <a href="#/about">關於</a>
+          <a href="teacher-setup.html">導師投稿</a>
+        </nav>
         <div class="header-actions">
           <label class="search-box" for="global-search">
             <span aria-hidden="true">⌕</span>
@@ -44,15 +56,15 @@
         <p>Uni+ 2.0 · 三維動態教學系統</p>
         <span class="footer-links">
           <a href="#/about">關於資料庫</a>
-          <a href="admin.html">內容編輯器</a>
+          <a href="teacher-setup.html">已獲批准導師投稿</a>
         </span>
       </footer>
     </div>
 
-    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="圖片預覽" hidden>
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="圖片預覽" aria-describedby="lightbox-caption" hidden>
       <button class="lightbox-close" type="button" aria-label="關閉圖片預覽">×</button>
       <img alt="">
-      <p></p>
+      <p id="lightbox-caption"></p>
     </div>
 
     <script src="data/content.js"></script>

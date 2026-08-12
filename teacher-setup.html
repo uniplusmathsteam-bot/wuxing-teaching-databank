@@ -55,8 +55,8 @@
           <li class="setup-step">
             <span class="step-number" aria-hidden="true">1</span>
             <div>
-              <h3>登入獲授權的 GitHub 帳戶</h3>
-              <p>登入管理員提供的 GitHub 帳戶，或登入已被邀請成為 repository collaborator 的個人帳戶。</p>
+              <h3>登入自己的 GitHub 帳戶</h3>
+              <p>每位導師必須使用自己的個人帳戶，並由管理員邀請成為 repository collaborator。不要共用管理員帳戶、密碼或權杖。</p>
               <a class="button ghost" href="https://github.com/login" target="_blank" rel="noopener">登入 GitHub ↗</a>
             </div>
           </li>
@@ -109,7 +109,7 @@
             <span class="step-number" aria-hidden="true">4</span>
             <div>
               <h3>貼上並驗證權杖</h3>
-              <p>驗證會讀取 GitHub 的現有協作者名單，不會修改 repository。成功後可直接前往編輯器。</p>
+              <p>驗證會確認目前帳戶已接受邀請，而且具備 Write、Maintain 或 Admin 發佈權限；過程不會修改 repository。</p>
               <form class="token-form" id="token-form">
                 <label for="setup-token">GitHub 存取權杖</label>
                 <div class="token-input-row">
@@ -125,7 +125,7 @@
                   <button class="button" id="verify-token" type="submit">驗證並載入名單</button>
                 </div>
                 <label class="remember-token">
-                  <input id="remember-token" type="checkbox" checked>
+                  <input id="remember-token" type="checkbox">
                   <span>在這部電腦記住權杖，供內容編輯器使用</span>
                 </label>
               </form>
@@ -144,21 +144,136 @@
         </ol>
       </section>
 
-      <section class="setup-section admin-guide" aria-labelledby="admin-guide-title">
-        <div>
-          <p class="setup-kicker">Administrator only</p>
-          <h2 id="admin-guide-title">管理員：新增導師協作者</h2>
-          <p>
-            在 GitHub 的 Collaborators 頁面按 <strong>Add people</strong>，輸入導師的 GitHub username 或電郵。
-            導師接受邀請後，請他們回到本頁完成權杖設定。
-          </p>
+      <section class="setup-section" aria-labelledby="content-guide-title">
+        <div class="section-heading">
+          <div>
+            <p class="setup-kicker">Daily content workflow</p>
+            <h2 id="content-guide-title">導師日常操作：內容、科目與網站瀏覽</h2>
+            <p>完成一次技術設定後，日常工作只需要使用內容編輯器和公開網站。</p>
+          </div>
+          <span class="step-total">操作指南 3 部分</span>
         </div>
-        <a
-          class="button ghost"
-          href="https://github.com/uniplusmathsteam-bot/wuxing-teaching-databank/settings/access"
-          target="_blank"
-          rel="noopener"
-        >管理 GitHub Collaborators ↗</a>
+
+        <ol class="setup-steps">
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div>
+              <h3>新增或修改內容</h3>
+              <p>
+                開啟內容編輯器，按左上角 <strong>＋ 新增內容</strong>；如要修改現有內容，直接在左邊清單選擇該項。
+                依次填寫五行分類、內容類型、標題、網址代號 ID、科目、年級、主題、標籤及封面圖。
+                影片或圖片可按 <strong>從電腦選擇</strong> 加入；右下角的卡片預覽可用來檢查標題、分類和封面。
+              </p>
+              <p>
+                完成後按右上角 <strong>完成，準備發佈 →</strong>，填寫更新說明，再按
+                <strong>直接發佈到 GitHub</strong>。看到「發佈成功」後等待一至兩分鐘，再到公開網站確認內容。
+              </p>
+              <a class="button" href="admin.html">開啟內容編輯器 →</a>
+            </div>
+          </li>
+
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div>
+              <h3>新增或管理科目</h3>
+              <p>
+                在內容編輯器按 <strong>＋ 新增內容</strong> 或先選擇一項現有內容，然後在
+                <strong>2. 分類與篩選</strong> 的科目欄旁按 <strong>管理科目</strong>。
+                按 <strong>＋ 新增科目</strong>，填寫中文名和英文名，例如「高中數學 / High School Mathematics」。
+              </p>
+              <p>
+                可以使用 ↑ ↓ 調整首頁的科目次序，亦可直接改名。新增完成後按「完成」，回到內容表格選擇新科目。
+                科目改動和內容一樣只會先儲存成草稿，必須完成發佈後才會出現在公開網站。
+              </p>
+            </div>
+          </li>
+
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div>
+              <h3>瀏覽及檢查網站</h3>
+              <p>
+                首頁的 <strong>五行戰術模組</strong> 可按金、木、水、火、土瀏覽內容；
+                <strong>按科目瀏覽</strong> 則會開啟指定科目的資料頁。頁面上方可按內容類型、五行、科目、年級、
+                主題及標籤篩選，亦可切換排序、圖庫或列表檢視。
+              </p>
+              <p>
+                使用頁首搜尋框可搜尋標題、科目、主題或標籤。點擊內容卡會進入詳情頁，再使用頁面路徑返回首頁、
+                五行頁或科目頁。每次發佈後，請檢查科目頁有新卡片、封面可顯示，並開啟詳情頁測試影片、圖片、
+                文章或互動工具。
+              </p>
+              <a class="button ghost" href="index.html">開啟網站 →</a>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="setup-section" aria-labelledby="it-setup-title">
+        <div class="section-heading">
+          <div>
+            <p class="setup-kicker">IT department / Cursor Agent</p>
+            <h2 id="it-setup-title">IT 部門：為新導師開通發佈權限</h2>
+            <p>IT 管理員可以自行完成以下設定，也可以把導師的公開 GitHub username 交給 Cursor Agent 代為發出邀請。</p>
+          </div>
+          <span class="step-total">管理員 4 步</span>
+        </div>
+
+        <ol class="setup-steps">
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div>
+              <h3>使用 IT 管理員的 GitHub 帳戶</h3>
+              <p>
+                登入對 <strong>uniplusmathsteam-bot/wuxing-teaching-databank</strong>
+                擁有管理權限的帳戶。每位管理員及導師應使用自己的帳戶，不要共用密碼或權杖。
+              </p>
+            </div>
+          </li>
+
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div>
+              <h3>邀請導師成為協作者</h3>
+              <p>
+                請導師提供公開的 GitHub username，不需要 Gmail、密碼或權杖。在 Collaborators 頁面按
+                <strong>Add people</strong>，加入該 username 並給予 <strong>Write</strong> 權限。
+              </p>
+              <a
+                class="button ghost"
+                href="https://github.com/uniplusmathsteam-bot/wuxing-teaching-databank/settings/access"
+                target="_blank"
+                rel="noopener"
+              >管理 GitHub Collaborators ↗</a>
+            </div>
+          </li>
+
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div>
+              <h3>或請 Cursor Agent 代為邀請</h3>
+              <p>
+                在 Cursor 切換到 <strong>Agent mode</strong>，貼上導師的公開 username，然後要求：
+                「Invite this teacher to uniplusmathsteam-bot/wuxing-teaching-databank with write access。」
+                Agent 會使用這部電腦已登入且具有管理權限的 GitHub 帳戶發出邀請，並回報結果。
+              </p>
+            </div>
+          </li>
+
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">4</span>
+            <div>
+              <h3>由導師接受邀請並建立自己的權杖</h3>
+              <p>
+                導師接受 GitHub 邀請後，回到本頁完成上面的權杖驗證，再前往內容編輯器。IT 管理員或
+                Cursor Agent 都不應代收、保存或要求導師交出權杖。
+              </p>
+            </div>
+          </li>
+        </ol>
+
+        <aside class="security-note">
+          <strong>權限分工：</strong>IT 管理員或 Cursor Agent 只負責協作者邀請；GitHub 帳戶登入、接受邀請及建立權杖必須由導師本人完成。
+        </aside>
       </section>
 
       <section class="setup-section collaborators-section" id="collaborators" aria-labelledby="collaborators-title">
@@ -195,7 +310,7 @@
             </article>
             <article>
               <strong id="stat-write">0</strong>
-              <span>可發佈內容</span>
+              <span>可發佈帳戶</span>
             </article>
             <article>
               <strong id="stat-read">0</strong>

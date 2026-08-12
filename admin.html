@@ -19,6 +19,7 @@
         </span>
       </a>
       <div class="admin-header-actions">
+        <a class="button ghost" href="teacher-setup.html">導師指南</a>
         <span class="draft-state" id="draft-state">草稿：尚未修改</span>
         <button class="button ghost" id="discard-draft" type="button">捨棄草稿</button>
         <button class="button" id="open-publish" type="button">完成，準備發佈 →</button>
@@ -258,17 +259,22 @@
         <section class="publish-direct">
           <h3>方法一：一鍵發佈（推薦）</h3>
           <p class="section-hint">
-            第一次使用要貼上一次 GitHub 存取權杖，之後這部電腦就會記住，以後按一下就發佈。
-            權杖只儲存在你自己的瀏覽器，不會上傳到網站；請不要在公用電腦儲存。
+            第一次使用請先完成<a href="teacher-setup.html">導師設定及權限驗證</a>，再貼上自己的 GitHub 存取權杖。
+            權杖不會上傳到網站；只應在自己的私人電腦選擇記住。
             產生權杖時，Repository access 選這一個 repository，Permissions 的 <strong>Contents</strong> 要設為 <strong>Read and write</strong>。
-            <a id="token-help" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">前往產生權杖 ↗</a>
+            <a id="token-help" href="teacher-setup.html">查看完整設定指南 →</a>
           </p>
+          <div class="admin-alert" id="publish-validation" tabindex="-1" hidden></div>
           <div class="token-row">
             <input id="gh-token" type="password" placeholder="貼上 GitHub 存取權杖" autocomplete="off" spellcheck="false">
             <button class="button ghost" id="forget-token" type="button">清除權杖</button>
           </div>
+          <label class="field checkbox">
+            <input id="remember-token" type="checkbox">
+            <span>在這部私人電腦記住權杖</span>
+          </label>
           <div class="token-row">
-            <input id="commit-message" type="text" placeholder="這次更新的說明（可留空），例如：新增 S4 三角學示範">
+            <input id="commit-message" type="text" placeholder="這次更新的說明，例如：新增 S4 三角學示範">
           </div>
           <p class="pending-summary" id="pending-summary" hidden></p>
           <div class="publish-actions">
@@ -279,8 +285,9 @@
         </section>
 
         <details class="publish-manual">
-          <summary>方法二：手動複製貼上（不需要權杖）</summary>
+          <summary>緊急後備：手動複製貼上（較容易覆蓋其他人的修改）</summary>
           <ol class="publish-steps">
+            <li><strong>只在一鍵發佈無法使用時採用。</strong>先重新整理本頁，確保載入 GitHub 最新內容。</li>
             <li>按 <strong>複製全部內容</strong>（或下載 <code>content.js</code>）。</li>
             <li>按 <strong>在 GitHub 開啟 content.js</strong>，登入後會直接進入編輯畫面。</li>
             <li>在 GitHub 的編輯框內按 <kbd>Ctrl</kbd>+<kbd>A</kbd> 全選，再 <kbd>Ctrl</kbd>+<kbd>V</kbd> 貼上。</li>

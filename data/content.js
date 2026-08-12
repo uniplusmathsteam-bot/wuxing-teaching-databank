@@ -66,6 +66,7 @@ window.DATABANK = {
 
   subjects: [
     { id: "mathematics", zh: "數學", en: "Mathematics" },
+    { id: "highschool-math", zh: "高中數學", en: "High School Mathematics" },
     { id: "physics", zh: "物理", en: "Physics" },
     { id: "chemistry", zh: "化學", en: "Chemistry" },
     { id: "biology", zh: "生物", en: "Biology" },
@@ -185,6 +186,31 @@ window.DATABANK = {
 4. **第四循環（約 45 分鐘）：** 平行四邊形證明答題框架，集中處理常見 DSE 與校本題型。
 
 彩色標記把 T、L、A、時間、必做題及快生延伸分開，讓導師可以快速掌握課堂節奏，亦方便課後檢討每個環節的完成度。
+`
+    },
+    {
+      id: "s4-quadratic-equations-systematic-solving",
+      element: "metal",
+      type: "article",
+      title: "S4 二次方程式：系統化解題流程",
+      subtitle: "以辨認題型、整理方程、選擇方法及驗算四個步驟，建立可重複使用的二次方程式解題框架。",
+      tags: ["#S4", "#QuadraticEquations", "#HighSchoolMath", "#SystematicSolving", "#金"],
+      cover: "media/metal/tactical-module-cover.png",
+      subject: "highschool-math",
+      form: "S4",
+      topic: "Quadratic Equations",
+      level: "中層水",
+      tla: "T + L",
+      date: "2026-08-12",
+      body: `
+## 四步解題框架
+
+1. **辨認題型：** 判斷題目需要因式分解、配方法或公式法。
+2. **整理方程：** 把所有項移到同一邊，寫成標準形式。
+3. **選擇方法：** 根據係數與數值特徵，使用最有效率的解法。
+4. **代入驗算：** 把答案代回原方程，檢查符號與計算。
+
+> 每完成一步便作一次短檢查，能更快找出錯誤發生的位置。
 `
     },
 

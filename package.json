@@ -1,0 +1,13 @@
+{
+  "name": "wuxing-teaching-databank",
+  "private": true,
+  "scripts": {
+    "test": "npm run test:content && npm run test:e2e",
+    "test:content": "node tests/validate-content.js",
+    "test:e2e": "playwright test",
+    "test:e2e:edge": "set PLAYWRIGHT_CHANNEL=msedge&& playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}

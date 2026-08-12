@@ -184,14 +184,18 @@
       })
     ).size;
 
-    const subjectCards = (data.subjects || [])
+    const visibleSubjects = (data.subjects || []).filter(function (subject) {
+      return countBySubject(subject.id) > 0;
+    });
+    const hiddenSubjectCount = (data.subjects || []).length - visibleSubjects.length;
+    const subjectCards = visibleSubjects
       .map(function (subject) {
         const count = countBySubject(subject.id);
         return [
-          '<a class="subject-card' + (count ? "" : " is-empty") + '" href="#/subject/' + escapeHtml(subject.id) + '">',
+          '<a class="subject-card" href="#/subject/' + escapeHtml(subject.id) + '">',
           "  <strong>" + escapeHtml(subject.zh) + "</strong>",
           "  <span>" + escapeHtml(subject.en) + "</span>",
-          "  <em>" + (count ? count + " 項內容" : "尚未有內容") + "</em>",
+          "  <em>" + count + " 項內容</em>",
           "</a>"
         ].join("");
       })
@@ -231,7 +235,7 @@
       '    <p class="hero-copy">把真實教學影片與五行戰術文章，依照金、木、水、火、土整理成可搜尋的教學武器庫。</p>',
       '    <div class="hero-stats">',
       '      <div class="stat"><strong>5</strong><span>戰術模組</span></div>',
-      '      <div class="stat"><strong>' + (data.subjects || []).length + '</strong><span>科目</span></div>',
+      '      <div class="stat"><strong>' + visibleSubjects.length + '</strong><span>已有內容科目</span></div>',
       '      <div class="stat"><strong>' + data.items.length + '</strong><span>教學資源</span></div>',
       '      <div class="stat"><strong>' + contentTypeCount + '</strong><span>內容類型</span></div>',
       "    </div>",
@@ -261,6 +265,9 @@
       "    <div><h2>按科目瀏覽</h2><p>同一科目的資源，橫跨五種教學風格</p></div>",
       "  </div>",
       '  <div class="subject-grid">' + subjectCards + "</div>",
+      hiddenSubjectCount
+        ? '<p class="subject-note">另有 ' + hiddenSubjectCount + " 個科目正在準備首批教學示範，完成後會在這裡出現。</p>"
+        : "",
       "</section>",
       '<section class="recent-section">',
       '  <div class="section-heading">',
@@ -357,7 +364,9 @@
         return (
           '<button class="type-filter ' +
           (state.type === type ? "is-active" : "") +
-          '" type="button" data-type="' +
+          '" type="button" aria-pressed="' +
+          (state.type === type) +
+          '" data-type="' +
           type +
           '">' +
           (type ? typeLabel(type) : "所有類型") +
@@ -377,9 +386,13 @@
       '      <div class="segmented" aria-label="檢視方式">',
       '        <button type="button" data-view="grid" class="' +
         (state.view === "grid" ? "is-active" : "") +
+        '" aria-pressed="' +
+        (state.view === "grid") +
         '" aria-label="圖庫檢視">▦</button>',
       '        <button type="button" data-view="list" class="' +
         (state.view === "list" ? "is-active" : "") +
+        '" aria-pressed="' +
+        (state.view === "list") +
         '" aria-label="列表檢視">☷</button>',
       "      </div>"
     ].join("");
@@ -426,14 +439,20 @@
     const visibleItems = refineItems(allItems);
 
     const tagButtons = [
-      '<button class="tag-filter ' + (!state.tag ? "is-active" : "") + '" type="button" data-tag="">全部</button>'
+      '<button class="tag-filter ' +
+        (!state.tag ? "is-active" : "") +
+        '" type="button" aria-pressed="' +
+        (!state.tag) +
+        '" data-tag="">全部</button>'
     ]
       .concat(
         tags.map(function (tag) {
           return (
             '<button class="tag-filter ' +
             (state.tag === tag ? "is-active" : "") +
-            '" type="button" data-tag="' +
+            '" type="button" aria-pressed="' +
+            (state.tag === tag) +
+            '" data-tag="' +
             escapeHtml(tag) +
             '">' +
             escapeHtml(tag) +
@@ -526,7 +545,9 @@
     const elementButtons = [
       '<button class="type-filter ' +
         (!state.element ? "is-active" : "") +
-        '" type="button" data-element-filter="">全部五行</button>'
+        '" type="button" aria-pressed="' +
+        (!state.element) +
+        '" data-element-filter="">全部五行</button>'
     ]
       .concat(
         data.elements
@@ -539,7 +560,9 @@
             return (
               '<button class="type-filter ' +
               (state.element === element.id ? "is-active" : "") +
-              '" type="button" data-element-filter="' +
+              '" type="button" aria-pressed="' +
+              (state.element === element.id) +
+              '" data-element-filter="' +
               escapeHtml(element.id) +
               '">' +
               escapeHtml(element.zh + " " + element.en) +
@@ -601,6 +624,7 @@
       item.tla,
       item.body,
       (item.tags || []).join(" "),
+      typeLabel(item.type),
       element.zh,
       element.en,
       element.role,
@@ -802,7 +826,8 @@
       }
     }
 
-    window.scrollTo({ top: 0, behavior: "instant" });
+    main.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: "auto" });
   }
 
   function updateCurrentView() {

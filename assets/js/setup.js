@@ -101,6 +101,13 @@
     return "read";
   }
 
+  function repositoryAccess(repository) {
+    const permissions = repository.permissions || {};
+    if (permissions.admin) return "admin";
+    if (permissions.maintain || permissions.push) return "write";
+    return "read";
+  }
+
   function roleLabel(collaborator) {
     const role = collaborator.role_name;
     if (role) {
@@ -154,7 +161,7 @@
     return row;
   }
 
-  function renderCollaborators(account, collaborators) {
+  function renderCollaborators(account, collaborators, currentAccess) {
     const rank = { admin: 0, write: 1, read: 2 };
     collaborators.sort(function (left, right) {
       const difference = rank[accessLevel(left)] - rank[accessLevel(right)];
@@ -175,7 +182,12 @@
     dom["stat-admin"].textContent = totals.admin;
     dom["stat-write"].textContent = totals.publish;
     dom["stat-read"].textContent = totals.read;
-    dom["record-account"].textContent = "已驗證帳戶：@" + account.login;
+    dom["record-account"].textContent =
+      "已驗證帳戶：@" +
+      account.login +
+      " · " +
+      (currentAccess === "admin" ? "Admin" : "Write") +
+      " · 可以發佈";
     dom["record-updated"].textContent = "更新時間：" + new Date().toLocaleString("zh-HK");
 
     dom["collaborator-list"].replaceChildren();
@@ -215,16 +227,25 @@
     try {
       const results = await Promise.all([
         apiFetch(API_ROOT + "/user", token),
-        loadAllCollaborators(token)
+        loadAllCollaborators(token),
+        apiFetch(API_ROOT + "/repos/" + REPO, token)
       ]);
       const account = results[0].data;
       const collaborators = results[1];
+      const currentAccess = repositoryAccess(results[2].data);
+      if (currentAccess === "read") {
+        const permissionError = new Error("The token does not have repository write access.");
+        permissionError.status = 403;
+        throw permissionError;
+      }
       const remembered = saveToken(token);
-      renderCollaborators(account, collaborators);
+      renderCollaborators(account, collaborators, currentAccess);
       showStatus(
         "驗證成功：@" +
           account.login +
-          " 可以存取 repository。已載入 " +
+          " 具有 " +
+          (currentAccess === "admin" ? "Admin" : "Write") +
+          " 權限，可以發佈內容。已載入 " +
           collaborators.length +
           " 位協作者。" +
           (dom["remember-token"].checked && !remembered ? " 但瀏覽器無法儲存權杖。" : ""),
