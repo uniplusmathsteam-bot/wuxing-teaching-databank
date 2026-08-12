@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <meta
+      name="description"
+      content="五行教學資料庫導師設定：接受 GitHub 邀請、建立存取權杖、驗證編輯權限及查看協作者名單。"
+    >
+    <title>導師設定 · 五行教學資料庫</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/setup.css">
+  </head>
+  <body class="setup-body">
+    <a class="skip-link" href="#main-content">跳到主要內容</a>
+
+    <header class="setup-header">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true">五</span>
+        <span>
+          <strong>導師設定中心</strong>
+          <small>Teacher setup · GitHub access</small>
+        </span>
+      </a>
+      <nav class="setup-nav" aria-label="主要連結">
+        <a class="button ghost" href="index.html">開啟網站</a>
+        <a class="button" href="admin.html">前往內容編輯器 →</a>
+      </nav>
+    </header>
+
+    <main class="setup-main" id="main-content">
+      <section class="setup-hero">
+        <p class="setup-kicker">首次使用只需設定一次</p>
+        <h1>取得發佈權限，開始上載教學示範</h1>
+        <p>
+          請依次完成以下步驟。GitHub 權杖只會在你選擇記住時儲存在這部電腦的瀏覽器，
+          不會加入網站內容或顯示給其他導師。
+        </p>
+        <aside class="security-note">
+          <strong>重要：</strong>權杖等同發佈密碼。不要透過電郵、WhatsApp 或截圖分享，也不要在公用電腦儲存。
+        </aside>
+      </section>
+
+      <section class="setup-section" aria-labelledby="setup-steps-title">
+        <div class="section-heading">
+          <div>
+            <p class="setup-kicker">Teacher instructions</p>
+            <h2 id="setup-steps-title">導師設定步驟</h2>
+          </div>
+          <span class="step-total">共 5 步</span>
+        </div>
+
+        <ol class="setup-steps">
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div>
+              <h3>登入獲授權的 GitHub 帳戶</h3>
+              <p>登入管理員提供的 GitHub 帳戶，或登入已被邀請成為 repository collaborator 的個人帳戶。</p>
+              <a class="button ghost" href="https://github.com/login" target="_blank" rel="noopener">登入 GitHub ↗</a>
+            </div>
+          </li>
+
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div>
+              <h3>接受協作者邀請</h3>
+              <p>使用個人帳戶的導師，先接受管理員發出的 repository 邀請。使用 repository 擁有者帳戶可跳過此步。</p>
+              <a
+                class="button ghost"
+                href="https://github.com/settings/repositories"
+                target="_blank"
+                rel="noopener"
+              >查看 Repository 邀請 ↗</a>
+            </div>
+          </li>
+
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div>
+              <h3>建立自己的存取權杖</h3>
+              <p>
+                按下面按鈕會預填名稱、90 日期限和 <strong>Contents: Read and write</strong>。
+                在 GitHub 頁面再選擇 <strong>Only select repositories</strong>，
+                並勾選 <strong>wuxing-teaching-databank</strong>。
+              </p>
+              <div class="step-actions">
+                <a
+                  class="button"
+                  href="https://github.com/settings/personal-access-tokens/new?name=Wuxing+Teaching+Editor&amp;description=Upload+teaching+demos+and+publish+databank+content&amp;target_name=uniplusmathsteam-bot&amp;expires_in=90&amp;contents=write&amp;metadata=read"
+                  target="_blank"
+                  rel="noopener"
+                >建立 Fine-grained token ↗</a>
+                <a
+                  class="button ghost"
+                  href="https://github.com/settings/tokens/new?description=Wuxing%20Teaching%20Databank%20Editor&amp;scopes=public_repo"
+                  target="_blank"
+                  rel="noopener"
+                >無法選擇 repository？使用 Classic token ↗</a>
+              </div>
+              <p class="step-detail">
+                Classic token 只需保留 <strong>public_repo</strong> 權限。按 Generate token 後立即複製
+                <code>github_pat_…</code> 或 <code>ghp_…</code>；離開頁面後 GitHub 不會再次顯示完整權杖。
+              </p>
+            </div>
+          </li>
+
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">4</span>
+            <div>
+              <h3>貼上並驗證權杖</h3>
+              <p>驗證會讀取 GitHub 的現有協作者名單，不會修改 repository。成功後可直接前往編輯器。</p>
+              <form class="token-form" id="token-form">
+                <label for="setup-token">GitHub 存取權杖</label>
+                <div class="token-input-row">
+                  <input
+                    id="setup-token"
+                    name="token"
+                    type="password"
+                    placeholder="貼上 github_pat_… 或 ghp_…"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <button class="button" id="verify-token" type="submit">驗證並載入名單</button>
+                </div>
+                <label class="remember-token">
+                  <input id="remember-token" type="checkbox" checked>
+                  <span>在這部電腦記住權杖，供內容編輯器使用</span>
+                </label>
+              </form>
+              <div class="token-status" id="token-status" role="status" aria-live="polite" hidden></div>
+            </div>
+          </li>
+
+          <li class="setup-step">
+            <span class="step-number" aria-hidden="true">5</span>
+            <div>
+              <h3>前往編輯器並發佈</h3>
+              <p>新增內容、從電腦選擇影片和封面、填寫科目與標籤，再按「完成，準備發佈」。</p>
+              <a class="button" href="admin.html">開啟內容編輯器 →</a>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="setup-section admin-guide" aria-labelledby="admin-guide-title">
+        <div>
+          <p class="setup-kicker">Administrator only</p>
+          <h2 id="admin-guide-title">管理員：新增導師協作者</h2>
+          <p>
+            在 GitHub 的 Collaborators 頁面按 <strong>Add people</strong>，輸入導師的 GitHub username 或電郵。
+            導師接受邀請後，請他們回到本頁完成權杖設定。
+          </p>
+        </div>
+        <a
+          class="button ghost"
+          href="https://github.com/uniplusmathsteam-bot/wuxing-teaching-databank/settings/access"
+          target="_blank"
+          rel="noopener"
+        >管理 GitHub Collaborators ↗</a>
+      </section>
+
+      <section class="setup-section collaborators-section" id="collaborators" aria-labelledby="collaborators-title">
+        <div class="section-heading">
+          <div>
+            <p class="setup-kicker">Live GitHub record</p>
+            <h2 id="collaborators-title">協作者記錄</h2>
+            <p>資料直接從 GitHub 載入，只會顯示在目前瀏覽器，不會寫入公開網站資料。</p>
+          </div>
+          <div class="record-actions">
+            <button class="button ghost" id="refresh-collaborators" type="button">重新整理</button>
+            <button class="button ghost" id="clear-token" type="button">清除已儲存權杖</button>
+          </div>
+        </div>
+
+        <div class="collaborator-empty" id="collaborator-empty">
+          <strong>尚未載入協作者記錄</strong>
+          <span>完成上面的權杖驗證後，這裡會顯示人數、GitHub 帳戶和 repository 權限。</span>
+        </div>
+
+        <div id="collaborator-record" hidden>
+          <div class="record-meta">
+            <span id="record-account"></span>
+            <span id="record-updated"></span>
+          </div>
+          <div class="record-stats" aria-label="協作者統計">
+            <article>
+              <strong id="stat-total">0</strong>
+              <span>全部協作者</span>
+            </article>
+            <article>
+              <strong id="stat-admin">0</strong>
+              <span>管理員權限</span>
+            </article>
+            <article>
+              <strong id="stat-write">0</strong>
+              <span>可發佈內容</span>
+            </article>
+            <article>
+              <strong id="stat-read">0</strong>
+              <span>唯讀權限</span>
+            </article>
+          </div>
+          <div class="collaborator-list" id="collaborator-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="setup-footer">
+      <span>五行教學資料庫 · Teacher Setup</span>
+      <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">查看或撤銷我的 GitHub tokens ↗</a>
+    </footer>
+
+    <script src="assets/js/setup.js"></script>
+  </body>
+</html>
