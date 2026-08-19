@@ -5,7 +5,6 @@ window.DATABANK = {
     description: "以五行戰術整理教學影片與教學方法文章。",
     version: "Uni+ 2.0 · 三維動態教學系統 V12.0"
   },
-
   elements: [
     {
       id: "metal",
@@ -63,7 +62,6 @@ window.DATABANK = {
       rgb: "173, 129, 81"
     }
   ],
-
   subjects: [
     { id: "mathematics", zh: "數學", en: "Mathematics" },
     { id: "highschool-math", zh: "高中數學", en: "High School Mathematics" },
@@ -73,7 +71,6 @@ window.DATABANK = {
     { id: "integrated-science", zh: "綜合科學", en: "Integrated Science" },
     { id: "chinese", zh: "中文", en: "Chinese" }
   ],
-
   items: [
     {
       id: "metal-tactical-module",
@@ -119,7 +116,17 @@ window.DATABANK = {
       type: "video",
       title: "S2 JM12 Identities and Factorization：Colour-Coded Systematic Solving",
       subtitle: "以一致的顏色區分係數、代數項、運算符號與指數，再按固定步驟完成恆等式及因式分解。",
-      tags: ["#ColourCoding", "#ColorCoding", "#S2", "#JM12", "#Identities", "#Factorization", "#SystematicSolving", "#Gold", "#金"],
+      tags: [
+        "#ColourCoding",
+        "#ColorCoding",
+        "#S2",
+        "#JM12",
+        "#Identities",
+        "#Factorization",
+        "#SystematicSolving",
+        "#Gold",
+        "#金"
+      ],
       cover: "media/metal/s2-jm12-identities-factorization-colour-structure-thumbnail.jpg",
       video: { provider: "local", src: "media/metal/s2-jm12-identities-factorization-colour-structure.mp4" },
       subject: "mathematics",
@@ -154,7 +161,6 @@ window.DATABANK = {
       subtitle: "以四個 TLA 循環編排四邊形性質、證明框架、DSE 題型與分層延伸，形成清晰可執行的課堂結構。",
       tags: ["#S3", "#JM29", "#Quadrilaterals", "#LessonPlan", "#TLA", "#StructuralPlanning", "#Gold", "#金"],
       cover: "media/metal/s3-jm29-quadrilaterals-lesson-plan/page-1.jpg",
-      imageLayout: "document",
       images: [
         {
           src: "media/metal/s3-jm29-quadrilaterals-lesson-plan/page-1.jpg",
@@ -165,6 +171,7 @@ window.DATABANK = {
           alt: "S3 JM29 Quadrilaterals structural lesson plan page 2：third and fourth TLA cycles"
         }
       ],
+      imageLayout: "document",
       subject: "mathematics",
       form: "S3",
       topic: "JM29 · Quadrilaterals",
@@ -213,7 +220,6 @@ window.DATABANK = {
 > 每完成一步便作一次短檢查，能更快找出錯誤發生的位置。
 `
     },
-
     {
       id: "wood-tactical-module",
       element: "wood",
@@ -252,7 +258,6 @@ window.DATABANK = {
 五行不與 TLA 階段固定綁定；導師應按學生的即時狀態切換戰術。
 `
     },
-
     {
       id: "water-tactical-module",
       element: "water",
@@ -309,7 +314,6 @@ window.DATABANK = {
       date: "2026-08-08",
       featured: true
     },
-
     {
       id: "fire-tactical-module",
       element: "fire",
@@ -402,7 +406,6 @@ window.DATABANK = {
       date: "2026-08-09",
       featured: true
     },
-
     {
       id: "earth-tactical-module",
       element: "earth",
@@ -440,6 +443,19 @@ window.DATABANK = {
 
 五行不與 TLA 階段固定綁定；導師應按學生的即時狀態切換戰術。
 `
+    },
+    {
+      id: "metal-mszvpzg1",
+      element: "wood",
+      type: "image",
+      title: "testing",
+      cover: "media/wood/02-fair-share-snacks.png",
+      images: [
+        { src: "media/wood/05-temperature-trap.png", alt: "" }
+      ],
+      subject: "mathematics",
+      date: "2026-08-19",
+      body: `test test`
     }
   ]
 };
