@@ -448,7 +448,7 @@ window.DATABANK = {
       id: "metal-mszvpzg1",
       element: "wood",
       type: "image",
-      title: "testing",
+      title: "testing 2",
       cover: "media/wood/02-fair-share-snacks.png",
       images: [
         { src: "media/wood/05-temperature-trap.png", alt: "" }
@@ -456,6 +456,18 @@ window.DATABANK = {
       subject: "mathematics",
       date: "2026-08-19",
       body: `test test`
+    },
+    {
+      id: "metal-mszx324l",
+      element: "earth",
+      type: "image",
+      title: "testing 2",
+      cover: "media/earth/image-3.png",
+      images: [
+        { src: "media/earth/03-scale-the-recipe.png", alt: "" }
+      ],
+      subject: "mathematics",
+      date: "2026-08-19"
     }
   ]
 };
