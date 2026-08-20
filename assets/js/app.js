@@ -119,8 +119,9 @@
   }
 
   function renderTags(tags, limit) {
-    return (tags || [])
-      .slice(0, limit || tags.length)
+    const safeTags = Array.isArray(tags) ? tags : [];
+    return safeTags
+      .slice(0, limit || safeTags.length)
       .map(function (tag) {
         return '<span class="tag">' + escapeHtml(tag) + "</span>";
       })

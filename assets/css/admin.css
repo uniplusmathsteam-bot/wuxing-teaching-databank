@@ -561,6 +561,22 @@ textarea {
   word-break: break-all;
 }
 
+.publish-review {
+  display: grid;
+  gap: 5px;
+  margin: 0 0 12px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.publish-review strong {
+  color: var(--text);
+}
+
 #f-body {
   min-height: 320px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -720,6 +736,10 @@ textarea {
 
 .publish-status.is-error {
   color: #e8836f;
+}
+
+.publish-status.is-warning {
+  color: #e2b96f;
 }
 
 .publish-manual {

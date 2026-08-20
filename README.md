@@ -28,8 +28,8 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 1. 第一次使用先開啟[導師設定及操作指南](https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/teacher-setup.html)，接受協作者邀請並驗證自己的 GitHub Write 權限。
 2. 開啟[內容編輯器](https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/admin.html)。
 3. 按 **＋ 新增內容**，填表；影片和圖片按 **從電腦選擇** 直接揀檔案。
-4. 按 **完成，準備發佈 →**，填寫更新說明，再按 **直接發佈到 GitHub**。
-5. 等一至兩分鐘，網站就更新了。
+4. 按 **完成，準備發佈 →**，核對最後確認、填寫更新說明，再按 **確認並發佈**。
+5. 編輯器會自動等待公開網站更新；看到「發佈及網站部署完成」後，按 **開啟新內容** 檢查結果。
 
 > **重要：** 在編輯器入面打字並不會即時更新網站。所有修改只存在你自己的瀏覽器，一定要按 **完成，準備發佈 →** 再發佈，網站先會改變。
 
@@ -41,7 +41,7 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 2. 編輯器會自動改好檔名並填上路徑，例如 `My Cover Photo.JPG` 會變成 `media/metal/my-cover-photo.jpg`。
 3. 封面圖會即時在右邊的卡片預覽顯示，確認揀對了檔案。
 4. 檔案暫時只留在你的瀏覽器，欄位下方會列出「發佈時會自動上載 N 個檔案」，可以逐個 **取消**。
-5. 按 **直接發佈到 GitHub** 時，編輯器會先檢查最新內容及衝突，再上載檔案和更新內容。
+5. 按 **確認並發佈** 時，編輯器會先檢查最新內容及衝突，再把所有檔案和內容合併成一個 GitHub commit。
 
 檔案大小規則：
 
@@ -95,10 +95,10 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 
 1. 第一次使用時，把 GitHub 存取權杖貼進去（見下一節）。只在自己的私人電腦勾選「記住權杖」。
 2. 填寫更新說明，例如「新增 S4 三角學示範」，方便其他導師辨認 GitHub 記錄。
-3. 按 **直接發佈到 GitHub**。有待上載的檔案會先逐個上載，畫面會顯示進度。
-4. 見到「發佈成功」就完成了，等一至兩分鐘網站就會更新。
+3. 核對「最後確認」摘要，再按 **確認並發佈**，並在瀏覽器確認對話框再核對一次。內容和所有待上載檔案只會產生一個 GitHub commit，因此只觸發一次 Pages deployment。
+4. 編輯器會持續檢查公開網站，直至新版本真正可讀取。見到「發佈及網站部署完成」後，按 **開啟新內容**；連結附有版本參數，可避開舊快取。
 
-如果其他人在你編輯期間發佈過新內容，編輯器會先警告你，避免無意中覆蓋別人的修改。
+如果其他人在你編輯期間發佈過新內容，編輯器會停止發佈並要求重新載入，不會提供強制覆蓋選項。即使檢查後有人同時更新，GitHub 亦會拒絕移動 branch，草稿和待上載檔案會保留。
 
 ### 方法二：手動複製貼上（不需要權杖）
 
@@ -122,7 +122,7 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 5. **Repository access**：選 **Only select repositories**，然後揀 `wuxing-teaching-databank`。
 6. **Permissions → Repository permissions → Contents**：設為 **Read and write**。
 7. 按 **Generate token**，複製出現的那串字（離開頁面後就看不到了）。
-8. 回到編輯器，貼進 **一鍵發佈** 的欄位，按一次 **直接發佈到 GitHub** 即可。
+8. 回到編輯器，把權杖貼進 **一鍵發佈** 的欄位；完成內容修改後按 **確認並發佈**。
 
 注意事項：
 
@@ -135,7 +135,7 @@ Notion Gallery 風格的靜態教學網站，以 Uni+ 2.0「三維動態教學�
 ## 常見問題
 
 **改完之後網站沒有變？**
-GitHub Pages 需要一至兩分鐘重新發佈。之後按 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> 強制重新載入。
+不要只按時間估計是否完成；保持發佈視窗開啟，等編輯器顯示「發佈及網站部署完成」。如果五分鐘內未能確認，更新已經安全提交到 GitHub，可稍後使用附有版本參數的 **開啟新內容**，或請管理員檢查 repository 的 Pages deployment。
 
 **卡片是空白的？**
 多數是封面圖路徑打錯。路徑要由 `media/` 開始，並且完全對應 GitHub 上的檔名（英文大小寫也要一樣）。
@@ -147,7 +147,7 @@ GitHub Pages 需要一至兩分鐘重新發佈。之後按 <kbd>Ctrl</kbd>+<kbd>
 權杖的 Contents 權限要設為 **Read and write**，而且 Repository access 要包含這個 repository。改完之後要重新產生一個權杖，舊的不會自動更新權限。
 
 **兩個人同時改？**
-編輯器的草稿是各自獨立的。一鍵發佈會先讀取 GitHub 最新版本；如偵測到其他人已發佈，請取消並重新載入核對，不要直接覆蓋。最安全仍是同一時間只由一人負責發佈。
+編輯器的草稿是各自獨立的。一鍵發佈會先讀取指定 branch head 的 `content.js`；如偵測到其他人已發佈便會停止，請重新載入核對。最後更新 branch 時亦要求 fast-forward，避免檢查後出現的同步修改被覆蓋。
 
 ---
 
@@ -293,15 +293,16 @@ tool: "tools/my-tool/index.html"
 
 ## 一鍵發佈的運作方式
 
-「直接發佈到 GitHub」使用 GitHub Contents API，全部在瀏覽器完成，沒有任何後端：
+「確認並發佈」使用 GitHub Contents API 做讀取，並使用 Git Data API 建立單一 commit；全部在瀏覽器完成，沒有任何後端：
 
 1. 驗證整個資料庫的必填欄位、ID、五行、科目和內容類型；有錯誤就停止。
-2. `GET /repos/{REPO}/contents/data/content.js?ref=main` 取得目前的 `sha` 及內容。
+2. 讀取 `git/ref/heads/main` 的固定 head SHA，再以該 SHA 取得 `data/content.js`，避免兩次讀取落在不同版本。
 3. 把回傳內容以 `new Function` 求值，與載入編輯器時的 `window.DATABANK` 做正規化比較；無法讀取會停止，不一致則要求導師先核對。
-4. 通過衝突檢查後，逐個上載待處理的媒體檔案：先 `GET` 取得已存在檔案的 `sha`（404 代表新檔案），再 `PUT` base64 內容。
-5. `PUT` `content.js`，附上新的 base64 內容與剛取得的 `sha`。
+4. 顯示最後確認後，將每個媒體檔案及 `content.js` 建成 blob，基於原 head 的 tree 建立新 tree，再建立一個以原 head 為 parent 的 commit。
+5. 以 `force: false` 更新 `refs/heads/main`；如檢查後 branch 已被其他人更新，GitHub 會拒絕非 fast-forward 操作。
+6. Commit 成功後，以帶 cache-busting 參數的公開 `data/content.js` 輪詢 GitHub Pages，內容完全一致才顯示部署完成，並提供目前內容的直接連結。
 
-衝突檢查在任何寫入之前完成；媒體檔案通過檢查後先上載、`content.js` 最後提交，因此網站不會指向未存在的檔案。從電腦揀的檔案會暫存在 `pending`（路徑 → `{ file, url }`），`url` 是 `URL.createObjectURL` 產生的本機預覽網址。上限見 `MAX_UPLOAD`（100 MB）與 `WARN_UPLOAD`（40 MB）。
+媒體和內容只會在最後的 branch ref 更新時一同生效，所以不會產生「媒體一個 commit、內容另一個 commit」的多次 Pages deployment，亦不會讓網站指向未存在的檔案。若最後 ref 更新發生衝突，已建立但未被引用的 Git objects 不會影響網站，使用者草稿仍會保留。從電腦揀的檔案會暫存在 `pending`（路徑 → `{ file, url }`），`url` 是 `URL.createObjectURL` 產生的本機預覽網址。上限見 `MAX_UPLOAD`（100 MB）與 `WARN_UPLOAD`（40 MB）。
 
 導師選擇「記住權杖」後，權杖才會存在 `localStorage`（key：`wuxing-admin-token`），只留在使用者的瀏覽器。HTTP 401／403／404／409 會翻譯成中文提示，見 `describeError()`。
 

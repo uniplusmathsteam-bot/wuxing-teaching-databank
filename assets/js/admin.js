@@ -11,6 +11,8 @@
   const TOKEN_KEY = "wuxing-admin-token";
   const MAX_UPLOAD = 100 * 1024 * 1024;
   const WARN_UPLOAD = 40 * 1024 * 1024;
+  const DEPLOY_TIMEOUT = 5 * 60 * 1000;
+  const DEPLOY_POLL_INTERVAL = 5000;
 
   const FIELD_ORDER = [
     "id",
@@ -77,6 +79,7 @@
     "publish-direct-btn",
     "publish-status",
     "publish-validation",
+    "publish-review",
     "site-link",
     "remember-token",
     "f-element",
@@ -1021,14 +1024,27 @@
 
   function openPublish() {
     const validation = validateAll();
+    const uploadCount = Object.keys(pending).length;
+    const selectedLabel = selected
+      ? "目前內容：「" + (selected.title || "未命名") + "」· " + (subjectLabel(selected.subject) || "未分類")
+      : "目前沒有選取個別內容；將發佈整份資料庫的修改。";
     dom["publish-source"].value = buildSource();
     dom["github-link"].href = EDIT_URL;
     dom["site-link"].href = SITE_URL;
+    dom["site-link"].textContent = selected ? "預覽目前內容 ↗" : "開啟網站 ↗";
+    if (selected) dom["site-link"].href = publicItemUrl(selected);
     dom["gh-token"].value = readToken();
     dom["remember-token"].checked = Boolean(dom["gh-token"].value);
     dom["publish-status"].hidden = true;
+    dom["publish-review"].innerHTML =
+      "<strong>最後確認</strong><span>" +
+      escapeHtml(selectedLabel) +
+      "</span><span>內容資料" +
+      (uploadCount ? "及 " + uploadCount + " 個媒體檔案" : "") +
+      "會合併成一個 GitHub commit，避免觸發多次網站部署。</span>" +
+      (dirty ? "" : "<span>目前沒有未發佈的修改。</span>");
     renderPublishValidation(validation);
-    dom["publish-direct-btn"].disabled = validation.length > 0;
+    dom["publish-direct-btn"].disabled = validation.length > 0 || !dirty;
 
     const waiting = Object.keys(pending);
     dom["pending-summary"].hidden = !waiting.length;
@@ -1135,28 +1151,88 @@
     return "https://api.github.com/repos/" + REPO + "/contents/" + path;
   }
 
-  async function uploadPendingFiles() {
+  function gitUrl(path) {
+    return "https://api.github.com/repos/" + REPO + "/git/" + path;
+  }
+
+  function publicItemUrl(item, cacheKey) {
+    const version = cacheKey ? "?v=" + encodeURIComponent(cacheKey) : "";
+    if (!item || !item.element || !item.id) return SITE_URL + version;
+    return SITE_URL + version + "#/" + encodeURIComponent(item.element) + "/" + encodeURIComponent(item.id);
+  }
+
+  function sleep(milliseconds) {
+    return new Promise(function (resolve) {
+      window.setTimeout(resolve, milliseconds);
+    });
+  }
+
+  async function createBlob(content) {
+    return githubFetch(gitUrl("blobs"), {
+      method: "POST",
+      body: JSON.stringify({ content: content, encoding: "base64" })
+    });
+  }
+
+  async function createAtomicCommit(headSha, note, publishedSource) {
     const paths = Object.keys(pending);
+    const headCommit = await githubFetch(gitUrl("commits/" + headSha));
+    const entries = [];
+
     for (let i = 0; i < paths.length; i += 1) {
       const path = paths[i];
       const file = pending[path].file;
-      status("正在上載檔案 " + (i + 1) + "／" + paths.length + "：" + file.name + "（" + formatSize(file.size) + "）…");
-
-      let sha = null;
-      try {
-        sha = (await githubFetch(contentsUrl(path) + "?ref=" + BRANCH)).sha;
-      } catch (error) {
-        if (error.status !== 404) throw error;
-      }
-
-      const body = { message: "Upload " + path, content: await fileToBase64(file), branch: BRANCH };
-      if (sha) body.sha = sha;
-      await githubFetch(contentsUrl(path), { method: "PUT", body: JSON.stringify(body) });
-
-      URL.revokeObjectURL(pending[path].url);
-      delete pending[path];
-      renderPending();
+      status("正在準備檔案 " + (i + 1) + "／" + paths.length + "：" + file.name + "（" + formatSize(file.size) + "）…");
+      const blob = await createBlob(await fileToBase64(file));
+      entries.push({ path: path, mode: "100644", type: "blob", sha: blob.sha });
     }
+
+    status("正在把內容和媒體合併成一個 commit…");
+    const contentBlob = await createBlob(encodeBase64(publishedSource));
+    entries.push({ path: CONTENT_PATH, mode: "100644", type: "blob", sha: contentBlob.sha });
+
+    const tree = await githubFetch(gitUrl("trees"), {
+      method: "POST",
+      body: JSON.stringify({ base_tree: headCommit.tree.sha, tree: entries })
+    });
+    const commit = await githubFetch(gitUrl("commits"), {
+      method: "POST",
+      body: JSON.stringify({
+        message: "Update content: " + note,
+        tree: tree.sha,
+        parents: [headSha]
+      })
+    });
+    await githubFetch(gitUrl("refs/heads/" + BRANCH), {
+      method: "PATCH",
+      body: JSON.stringify({ sha: commit.sha, force: false })
+    });
+    return commit.sha;
+  }
+
+  async function waitForDeployment(commitSha, publishedSource) {
+    const started = Date.now();
+    let attempt = 0;
+
+    while (Date.now() - started < DEPLOY_TIMEOUT) {
+      attempt += 1;
+      status(
+        "GitHub 已接受單一 commit。正在確認公開網站部署完成" +
+          (attempt > 1 ? "（已等候約 " + Math.round((Date.now() - started) / 1000) + " 秒）" : "") +
+          "…"
+      );
+      try {
+        const response = await fetch(
+          SITE_URL + "data/content.js?deploy=" + encodeURIComponent(commitSha) + "&check=" + Date.now(),
+          { cache: "no-store" }
+        );
+        if (response.ok && (await response.text()).trim() === publishedSource.trim()) return true;
+      } catch (_) {
+        // A temporary Pages or network error is expected while deployment is in progress.
+      }
+      await sleep(DEPLOY_POLL_INTERVAL);
+    }
+    return false;
   }
 
   async function publishDirect() {
@@ -1180,14 +1256,18 @@
       return;
     }
 
-    const apiUrl = contentsUrl(CONTENT_PATH) + "?ref=" + BRANCH;
     dom["publish-direct-btn"].disabled = true;
 
     const uploaded = Object.keys(pending).length;
+    const publishedItem = selected ? clone(selected) : null;
+    const publishedSource = buildSource();
+    let commitCreated = false;
 
     try {
       status("正在檢查 GitHub 上的最新內容…");
-      const current = await githubFetch(apiUrl);
+      const branch = await githubFetch(gitUrl("ref/heads/" + BRANCH));
+      const headSha = branch.object.sha;
+      const current = await githubFetch(contentsUrl(CONTENT_PATH) + "?ref=" + encodeURIComponent(headSha));
       const versionMatch = matchesLoadedVersion(decodeBase64(current.content));
 
       if (versionMatch === null) {
@@ -1195,29 +1275,30 @@
         return;
       }
       if (!versionMatch) {
-        const proceed = window.confirm(
-          "GitHub 上的內容跟你開啟編輯器時不一樣，可能有其他人已經發佈了新內容。\n" +
-            "繼續發佈會覆蓋他們的修改。要繼續嗎？"
+        status(
+          "發佈已停止：其他人已更新 GitHub 內容。請重新載入編輯器，核對最新內容後再修改；系統不會容許覆蓋對方的更新。",
+          "error"
         );
-        if (!proceed) {
-          status("已取消發佈。請重新載入編輯器，取得最新內容後再修改。", "error");
-          return;
-        }
+        return;
       }
 
-      await uploadPendingFiles();
+      const confirmed = window.confirm(
+        "最後確認發佈：\n\n" +
+          (publishedItem ? "內容：「" + (publishedItem.title || "未命名") + "」\n" : "內容：整份資料庫修改\n") +
+          "媒體檔案：" +
+          uploaded +
+          " 個\n" +
+          "更新說明：" +
+          note +
+          "\n\n內容和媒體會合併成一個 commit，然後等待公開網站部署完成。確定繼續嗎？"
+      );
+      if (!confirmed) {
+        status("已取消發佈，草稿和待上載檔案仍然保留。");
+        return;
+      }
 
-      status("正在發佈到 GitHub…");
-      const publishedSource = buildSource();
-      await githubFetch(contentsUrl(CONTENT_PATH), {
-        method: "PUT",
-        body: JSON.stringify({
-          message: "Update content: " + note,
-          content: encodeBase64(publishedSource),
-          sha: current.sha,
-          branch: BRANCH
-        })
-      });
+      const commitSha = await createAtomicCommit(headSha, note, publishedSource);
+      commitCreated = true;
 
       try {
         if (dom["remember-token"].checked) localStorage.setItem(TOKEN_KEY, token);
@@ -1227,21 +1308,41 @@
       }
       window.DATABANK = clone(db);
       clearDraft();
+      clearPending();
       dirty = false;
       dom["commit-message"].value = "";
       dom["draft-state"].textContent = "已發佈到 GitHub";
       dom["draft-state"].classList.remove("is-dirty");
       dom["draft-banner"].hidden = true;
       dom["pending-summary"].hidden = true;
-      status(
-        (uploaded ? "已上載 " + uploaded + " 個檔案，並" : "") +
-          "發佈成功！GitHub Pages 會在一至兩分鐘後更新，之後重新整理網站即可看到。",
-        "ok"
-      );
+      dom["site-link"].href = publicItemUrl(publishedItem, commitSha.slice(0, 12));
+      dom["site-link"].textContent = publishedItem ? "開啟新內容 ↗" : "開啟已更新網站 ↗";
+
+      const deployed = await waitForDeployment(commitSha, publishedSource);
+      if (deployed) {
+        dom["draft-state"].textContent = "已發佈並部署";
+        status(
+          (uploaded ? "已上載 " + uploaded + " 個檔案，" : "") +
+            "發佈及網站部署完成！可按「" +
+            (publishedItem ? "開啟新內容" : "開啟已更新網站") +
+            "」查看。",
+          "ok"
+        );
+      } else {
+        status(
+          "內容已安全發佈到 GitHub，但五分鐘內仍未能確認公開網站更新。請稍後按右邊連結查看，或請管理員檢查 GitHub Pages deployment。",
+          "warning"
+        );
+      }
     } catch (error) {
-      status(describeError(error), "error");
+      status(
+        commitCreated
+          ? "內容已提交到 GitHub，但檢查網站部署時遇到問題：" + describeError(error)
+          : describeError(error),
+        commitCreated ? "warning" : "error"
+      );
     } finally {
-      dom["publish-direct-btn"].disabled = validateAll().length > 0;
+      dom["publish-direct-btn"].disabled = validateAll().length > 0 || !dirty;
     }
   }
 

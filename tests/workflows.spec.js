@@ -119,6 +119,27 @@ test("public dashboard exposes clear navigation and accessible controls", async 
   await expect(overviewButton).toBeFocused();
 });
 
+test("every catalog item opens even when optional metadata is omitted", async ({ page }) => {
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await page.goto(rootUrl + "index.html");
+  const items = await page.evaluate(() =>
+    window.DATABANK.items.map((item) => ({
+      title: item.title,
+      hash: `#/${item.element}/${encodeURIComponent(item.id)}`
+    }))
+  );
+
+  for (const item of items) {
+    await page.evaluate((hash) => {
+      window.location.hash = hash;
+    }, item.hash);
+    await expect(page.locator(".detail-header h1")).toHaveText(item.title);
+  }
+
+  expect(pageErrors).toEqual([]);
+});
+
 test("public and teacher guides remain usable on mobile over localhost", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(httpRoot + "index.html");
@@ -179,7 +200,17 @@ test("editor blocks publishing while any item is invalid", async ({ page }) => {
 test("editor fails closed when the remote catalog cannot be read safely", async ({ page }) => {
   let writeAttempted = false;
   await page.route("https://api.github.com/**", async (route) => {
-    if (route.request().method() === "PUT") writeAttempted = true;
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+    if (request.method() !== "GET") writeAttempted = true;
+    if (pathname.endsWith("/git/ref/heads/main")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ object: { sha: "unreadable-head-sha" } })
+      });
+      return;
+    }
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -201,18 +232,67 @@ test("editor fails closed when the remote catalog cannot be read safely", async 
   expect(writeAttempted).toBe(false);
 });
 
-test("editor safely publishes valid content and clears local secrets and draft", async ({ page }) => {
-  let publishedSource = "";
-  let authorization = "";
+test("editor refuses to overwrite a newer remote catalog", async ({ page }) => {
+  let writeAttempted = false;
+  const changedRemote = originalSource.replace("五行教學資料庫", "Remote teacher update");
 
   await page.route("https://api.github.com/**", async (route) => {
     const request = route.request();
     const pathname = new URL(request.url()).pathname;
-    if (!pathname.endsWith("/contents/data/content.js")) {
-      await route.fulfill({ status: 500, body: "Unexpected publish API request" });
+    if (request.method() !== "GET") writeAttempted = true;
+
+    if (pathname.endsWith("/git/ref/heads/main")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ object: { sha: "newer-head-sha" } })
+      });
       return;
     }
-    if (request.method() === "GET") {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        sha: "newer-content-sha",
+        content: Buffer.from(changedRemote, "utf8").toString("base64")
+      })
+    });
+  });
+
+  await page.goto(rootUrl + "admin.html");
+  await createValidArticle(page, "remote-conflict-test", "Remote Conflict Test");
+  await page.locator("#open-publish").click();
+  await page.locator("#gh-token").fill(fakeToken);
+  await page.locator("#commit-message").fill("Must not overwrite");
+  await page.locator("#publish-direct-btn").click();
+
+  await expect(page.locator("#publish-status")).toContainText("其他人已更新");
+  expect(writeAttempted).toBe(false);
+});
+
+test("editor atomically publishes media and content, then verifies the public deployment", async ({ page }) => {
+  let publishedSource = "";
+  let authorization = "";
+  let treePayload = null;
+  let commitPayload = null;
+  let refPayload = null;
+  let writeCount = 0;
+  let blobCount = 0;
+
+  await page.route("https://api.github.com/**", async (route) => {
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+    authorization = request.headers().authorization || authorization;
+
+    if (pathname.endsWith("/git/ref/heads/main") && request.method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ object: { sha: "original-head-sha" } })
+      });
+      return;
+    }
+    if (pathname.endsWith("/contents/data/content.js") && request.method() === "GET") {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -223,31 +303,104 @@ test("editor safely publishes valid content and clears local secrets and draft",
       });
       return;
     }
+    if (pathname.endsWith("/git/commits/original-head-sha") && request.method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ tree: { sha: "original-tree-sha" } })
+      });
+      return;
+    }
+    if (pathname.endsWith("/git/blobs") && request.method() === "POST") {
+      writeCount += 1;
+      blobCount += 1;
+      const payload = request.postDataJSON();
+      const decoded = Buffer.from(payload.content, "base64").toString("utf8");
+      if (decoded.startsWith("window.DATABANK")) publishedSource = decoded;
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ sha: "new-blob-" + blobCount })
+      });
+      return;
+    }
+    if (pathname.endsWith("/git/trees") && request.method() === "POST") {
+      writeCount += 1;
+      treePayload = request.postDataJSON();
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ sha: "new-tree-sha" })
+      });
+      return;
+    }
+    if (pathname.endsWith("/git/commits") && request.method() === "POST") {
+      writeCount += 1;
+      commitPayload = request.postDataJSON();
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ sha: "new-commit-sha" })
+      });
+      return;
+    }
+    if (pathname.endsWith("/git/refs/heads/main") && request.method() === "PATCH") {
+      writeCount += 1;
+      refPayload = request.postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ object: { sha: "new-commit-sha" } })
+      });
+      return;
+    }
 
-    authorization = request.headers().authorization || "";
-    const payload = request.postDataJSON();
-    publishedSource = Buffer.from(payload.content, "base64").toString("utf8");
+    await route.fulfill({ status: 500, body: "Unexpected publish API request" });
+  });
+  await page.route("https://uniplusmathsteam-bot.github.io/wuxing-teaching-databank/data/content.js**", async (route) => {
     await route.fulfill({
       status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ content: { sha: "published-content-sha" } })
+      contentType: "application/javascript",
+      body: publishedSource
     });
   });
 
   await page.goto(rootUrl + "admin.html");
   await createValidArticle(page, "teacher-publishing-safety-test", "Teacher Publishing Safety Test");
+  const fileChooserPromise = page.waitForEvent("filechooser");
+  await page.locator('button[data-pick="cover"]').click();
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles({
+    name: "atomic-cover.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("atomic test image")
+  });
 
   await page.locator("#open-publish").click();
   await expect(page.locator("#publish-validation")).toBeHidden();
+  await expect(page.locator("#publish-review")).toContainText("一個 GitHub commit");
   await page.locator("#gh-token").fill(fakeToken);
   await expect(page.locator("#remember-token")).not.toBeChecked();
   await page.locator("#commit-message").fill("Verify safe teacher publishing");
+  page.once("dialog", (dialog) => dialog.accept());
   await page.locator("#publish-direct-btn").click();
 
-  await expect(page.locator("#publish-status")).toContainText("發佈成功");
+  await expect(page.locator("#publish-status")).toContainText("發佈及網站部署完成");
   expect(authorization).toBe(`Bearer ${fakeToken}`);
   expect(publishedSource).toContain('id: "teacher-publishing-safety-test"');
   expect(publishedSource).toContain('subject: "highschool-math"');
+  expect(writeCount).toBe(5);
+  expect(treePayload.base_tree).toBe("original-tree-sha");
+  expect(treePayload.tree.map((entry) => entry.path).sort()).toEqual([
+    "data/content.js",
+    "media/metal/atomic-cover.png"
+  ]);
+  expect(commitPayload.parents).toEqual(["original-head-sha"]);
+  expect(refPayload).toEqual({ sha: "new-commit-sha", force: false });
+  await expect(page.locator("#site-link")).toHaveAttribute(
+    "href",
+    /teacher-publishing-safety-test$/
+  );
   const storage = await page.evaluate(() => ({
     token: localStorage.getItem("wuxing-admin-token"),
     draft: localStorage.getItem("wuxing-admin-draft")

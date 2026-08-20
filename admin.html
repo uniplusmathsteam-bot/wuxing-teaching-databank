@@ -265,6 +265,7 @@
             <a id="token-help" href="teacher-setup.html">查看完整設定指南 →</a>
           </p>
           <div class="admin-alert" id="publish-validation" tabindex="-1" hidden></div>
+          <div class="publish-review" id="publish-review" aria-live="polite"></div>
           <div class="token-row">
             <input id="gh-token" type="password" placeholder="貼上 GitHub 存取權杖" autocomplete="off" spellcheck="false">
             <button class="button ghost" id="forget-token" type="button">清除權杖</button>
@@ -278,7 +279,7 @@
           </div>
           <p class="pending-summary" id="pending-summary" hidden></p>
           <div class="publish-actions">
-            <button class="button" id="publish-direct-btn" type="button">直接發佈到 GitHub</button>
+            <button class="button" id="publish-direct-btn" type="button">確認並發佈</button>
             <a class="button ghost" id="site-link" href="#" target="_blank" rel="noopener">開啟網站 ↗</a>
           </div>
           <p class="publish-status" id="publish-status" hidden></p>
@@ -291,7 +292,7 @@
             <li>按 <strong>複製全部內容</strong>（或下載 <code>content.js</code>）。</li>
             <li>按 <strong>在 GitHub 開啟 content.js</strong>，登入後會直接進入編輯畫面。</li>
             <li>在 GitHub 的編輯框內按 <kbd>Ctrl</kbd>+<kbd>A</kbd> 全選，再 <kbd>Ctrl</kbd>+<kbd>V</kbd> 貼上。</li>
-            <li>按綠色的 <strong>Commit changes</strong>，等一兩分鐘網站就會更新。</li>
+            <li>按綠色的 <strong>Commit changes</strong>，再到 repository 的 Deployments 確認網站更新完成。</li>
           </ol>
           <div class="publish-actions">
             <button class="button" id="copy-source" type="button">複製全部內容</button>
